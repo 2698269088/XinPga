@@ -13,7 +13,7 @@
 | `/xpa removemessage &lt;消息&gt;` | 从发送列表移除消息 |
 | `/xpa listmessages` | 列出所有发送消息 |
 | `/xpa time &lt;秒&gt;` | 设置公告发送间隔 |
-| `/xpa mode &lt;PUBLIC|PRIVATE&gt;` | 设置发送模式 |
+| `/xpa mode &lt;PUBLIC/PRIVATE&gt;` | 设置发送模式 |
 | `/xpa privateinterval &lt;秒&gt;` | 设置私聊发送间隔 |
 | `/xpa messageinterval &lt;秒&gt;` | 设置消息间发送间隔 |
 | `/xpa blacklist add &lt;玩家名&gt;` | 添加玩家到私聊黑名单 |
