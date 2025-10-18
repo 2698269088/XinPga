@@ -34,7 +34,7 @@
   // 要发送的消息列表
   "messages": [
     "你好啊",
-    "笨宣传插件基于xinbot框架制作，已在GitHub开源。xinbot带给您类Bukkit的插件开发体验（[GitHub链接](https://github.com/2698269088/XinPga)）"
+    "本宣传工具基于xinbot框架制作，已在GitHub开源。xinbot带给您类Bukkit的插件开发体验（github.com/2698269088/XinPga）"
   ],
   // 是否在消息末尾追加随机字符串
   "appendRandomString": true,
