@@ -8,17 +8,17 @@
 |------|------|
 | `/xpa start` | 启动定时发送 |
 | `/xpa stop` | 停止定时发送 |
-| `/xpa string &lt;文本&gt;` | 设置发送内容（兼容旧命令） |
-| `/xpa addmessage &lt;消息&gt;` | 添加消息到发送列表 |
-| `/xpa removemessage &lt;消息&gt;` | 从发送列表移除消息 |
+| `/xpa string <文本信息>` | 设置发送内容（兼容旧命令） |
+| `/xpa addmessage <消息>` | 添加消息到发送列表 |
+| `/xpa removemessage <消息>` | 从发送列表移除消息 |
 | `/xpa listmessages` | 列出所有发送消息 |
-| `/xpa time &lt;秒&gt;` | 设置公告发送间隔 |
-| `/xpa mode &lt;PUBLIC/PRIVATE&gt;` | 设置发送模式 |
-| `/xpa privateinterval &lt;秒&gt;` | 设置私聊发送间隔 |
-| `/xpa messageinterval &lt;秒&gt;` | 设置消息间发送间隔 |
-| `/xpa blacklist add &lt;玩家名&gt;` | 添加玩家到私聊黑名单 |
-| `/xpa blacklist remove &lt;玩家名&gt;` | 从私聊黑名单移除玩家 |
-| `/xpa blacklist list` | 列出私聊黑名单 |
+| `/xpa time <秒>` | 设置公告发送间隔 |
+| `/xpa mode <PUBLIC/PRIVATE&>` | 设置发送模式 |
+| `/xpa privateinterval <秒>` | 设置私聊发送间隔 |
+| `/xpa messageinterval <秒>` | 设置消息间发送间隔 |
+| `/xpa blacklist add <玩家名>` | 添加玩家到私聊黑名单 |
+| `/xpa blacklist remove <玩家名>` | 从私聊黑名单移除玩家 |
+| `/xpa blacklist /list/` | 列出私聊黑名单 |
 | `/xpa reload` | 重载配置文件 |
 | `/xpa help` | 显示此帮助信息 |
 **注：使用指令时无需在控制台添加"/"**
