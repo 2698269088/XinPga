@@ -1,0 +1,16 @@
+{
+  "enabled": false,
+  "intervalSeconds": 40,
+  "messages": [
+    "你好啊",
+    "本宣传工具基于xinbot框架制作，已在GitHub开源。xinbot带给您类Bukkit的插件开发体验（github.com/2698269088/XinPga）"
+  ],
+  "appendRandomString": true,
+  "randomLength": 5,
+  "sendMode": "PRIVATE",
+  "privateMessageInterval": 2,
+  "messageInterval": 1,
+  "privateMessageBlacklist": [
+    "e_2"
+  ]
+}
