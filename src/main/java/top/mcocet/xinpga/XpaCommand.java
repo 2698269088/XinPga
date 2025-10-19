@@ -20,6 +20,6 @@ public class XpaCommand extends Command {
 
     @Override
     public String getUsage() {
-        return "/xpa start|stop|string <文本>|addmessage <消息>|removemessage <消息>|listmessages|time <秒>|mode <PUBLIC|PRIVATE>|privateinterval <秒>|messageinterval <秒>|reload|blacklist add <玩家名>|blacklist remove <玩家名>|blacklist list|updateplayerlist";
+        return "/xpa start|stop|string <文本>|addmessage <消息>|removemessage <消息>|listmessages|time <秒>|mode <PUBLIC|PRIVATE>|privateinterval <秒>|messageinterval <秒>|reload|debug|blacklist add <玩家名>|blacklist remove <玩家名>|blacklist list|updateplayerlist|debug";
     }
 }

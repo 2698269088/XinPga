@@ -90,6 +90,7 @@ public class XpaCommandExecutor extends TabExecutor {
             case "reload" -> XinPga.INSTANCE.cmdReload();
             case "help" -> showHelp();
             case "updateplayerlist" -> XinPga.INSTANCE.cmdUpdatePlayerList();
+            case "debug" -> XinPga.INSTANCE.cmdDebugPlayerList();
             case "blacklist" -> {
                 if (args.length < 2) {
                     log.info("用法: /xpa blacklist add <玩家名> | remove <玩家名> | list");
@@ -136,6 +137,7 @@ public class XpaCommandExecutor extends TabExecutor {
         log.info("/xpa blacklist remove <玩家名> - 从私聊黑名单移除玩家");
         log.info("/xpa blacklist list - 列出私聊黑名单");
         log.info("/xpa reload - 重载配置文件");
+        log.info("/xpa debug - 显示插件信息");
         log.info("/xpa help - 显示此帮助信息");
     }
 

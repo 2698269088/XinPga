@@ -40,7 +40,7 @@ public class XinPga implements Plugin, Listener {
     @Override
     public void onEnable() {
         outLog("XinPga 插件已启用");
-        outLog("XinPga 版本: v1.3.1");
+        outLog("XinPga 版本: v1.3.2");
         loadConfig();
         Bot.Instance.getPluginManager().events().registerEvents(this, this);
         Bot.Instance.getPluginManager().registerCommand(new XpaCommand(), new XpaCommandExecutor(), this);
@@ -121,6 +121,23 @@ public class XinPga implements Plugin, Listener {
             // 发送所有消息给这个玩家
             PrivateMessageSender.sendPrivateMessagesToPlayer(currentPlayer, messages, false, 0);
         }
+    }
+
+    // 添加调试方法
+    public void cmdDebugPlayerList() {
+        PrivateMessageSender.printPlayerListStatus();
+        outLog("当前Bot名称: " + Bot.Instance.getProtocol().getProfile().getName());
+
+        // 显示当前在线玩家
+        Map<UUID, GameProfile> players = Bot.Instance.players;
+        List<String> onlinePlayers = players.values().stream()
+                .map(GameProfile::getName)
+                .collect(Collectors.toList());
+        outLog("当前在线玩家: " + String.join(", ", onlinePlayers));
+
+        // 显示黑名单玩家
+        List<String> blacklist = config.getPrivateMessageBlacklist();
+        outLog("黑名单玩家: " + String.join(", ", blacklist));
     }
 
     // 获取当前应该发送消息的玩家（不改变索引）
