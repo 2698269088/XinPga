@@ -109,7 +109,7 @@ public class PrivateMessageSender {
 
                     // 私聊模式不添加随机字符串
                     Bot.Instance.sendCommand("msg " + playerName + " " + message);
-                    log.info("已发送私聊消息给玩家：" + playerName + " 内容: " + message);
+                    //log.info("已发送私聊消息给玩家：" + playerName + " 内容: " + message);
 
                     // 如果不是最后一条消息，则等待指定间隔
                     if (i < messages.size() - 1) {
@@ -127,7 +127,7 @@ public class PrivateMessageSender {
     public static void sendPrivateMessages(String message) {
         String playerName = getNextPlayer();
         if (playerName != null) {
-            // 发送私聊消息（不添加随机字符串）
+            // 发送私聊消息
             Bot.Instance.sendCommand("msg " + playerName + " " + message);
             log.info("已发送私聊消息给玩家：" + playerName);
         }
