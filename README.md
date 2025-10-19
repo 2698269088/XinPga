@@ -18,7 +18,7 @@
 | `/xpa messageinterval <秒>` | 设置消息间发送间隔 |
 | `/xpa blacklist add <玩家名>` | 添加玩家到私聊黑名单 |
 | `/xpa blacklist remove <玩家名>` | 从私聊黑名单移除玩家 |
-| `/xpa blacklist /list/` | 列出私聊黑名单 |
+| `/xpa blacklist list` | 列出私聊黑名单 |
 | `/xpa reload` | 重载配置文件 |
 | `/xpa help` | 显示此帮助信息 |
 **注：使用指令时无需在控制台添加"/"**
