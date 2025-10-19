@@ -89,6 +89,7 @@ public class XpaCommandExecutor extends TabExecutor {
             }
             case "reload" -> XinPga.INSTANCE.cmdReload();
             case "help" -> showHelp();
+            case "updateplayerlist" -> XinPga.INSTANCE.cmdUpdatePlayerList();
             case "blacklist" -> {
                 if (args.length < 2) {
                     log.info("用法: /xpa blacklist add <玩家名> | remove <玩家名> | list");
@@ -130,6 +131,7 @@ public class XpaCommandExecutor extends TabExecutor {
         log.info("/xpa mode <PUBLIC|PRIVATE> - 设置发送模式");
         log.info("/xpa privateinterval <秒> - 设置私聊发送间隔");
         log.info("/xpa messageinterval <秒> - 设置消息间发送间隔");
+        log.info("/xpa updateplayerlist - 手动更新在线玩家列表");
         log.info("/xpa blacklist add <玩家名> - 添加玩家到私聊黑名单");
         log.info("/xpa blacklist remove <玩家名> - 从私聊黑名单移除玩家");
         log.info("/xpa blacklist list - 列出私聊黑名单");
@@ -140,8 +142,7 @@ public class XpaCommandExecutor extends TabExecutor {
     @Override
     public List<String> onTabComplete(Command cmd, String label, String[] args) {
         if (args.length == 1) {
-            return List.of("start", "stop", "string", "addmessage", "removemessage", "listmessages", "time", "reload", "move", "mode", "privateinterval", "messageinterval", "help", "blacklist");
-        } else if (args.length == 2 && args[0].equals("move")) {
+            return List.of("start", "stop", "string", "addmessage", "removemessage", "listmessages", "time", "reload", "move", "mode", "privateinterval", "messageinterval", "help", "blacklist", "updateplayerlist");        } else if (args.length == 2 && args[0].equals("move")) {
             return List.of("x", "z");
         } else if (args.length == 2 && args[0].equals("mode")) {
             return List.of("PUBLIC", "PRIVATE");

@@ -40,7 +40,7 @@ public class XinPga implements Plugin, Listener {
     @Override
     public void onEnable() {
         outLog("XinPga 插件已启用");
-        outLog("XinPga 版本: v1.4");
+        outLog("XinPga 版本: v1.3");
         loadConfig();
         Bot.Instance.getPluginManager().events().registerEvents(this, this);
         Bot.Instance.getPluginManager().registerCommand(new XpaCommand(), new XpaCommandExecutor(), this);
@@ -51,18 +51,22 @@ public class XinPga implements Plugin, Listener {
     @Override
     public void onDisable() {
         stopScheduler();
+        outLog("XinPga 插件已关闭");
     }
 
     @Override
-    public void onUnload() { /* empty */ }
+    public void onUnload() {
+        outLog("XinPga 插件已卸载");
+    }
 
-    /* -------- 事件监听 -------- */
+    // 登录成功时启动调度器
     @EventHandler
     public void onLogin(LoginSuccessEvent event) {
+        PrivateMessageSender.setBotName(Bot.Instance.getProtocol().getProfile().getName());
         if (config.isEnabled()) startScheduler();
     }
 
-    /* -------- 定时任务 -------- */
+    // 启动调度器
     private void startScheduler() {
         if (task != null && !task.isDone()) return;
 
@@ -104,7 +108,6 @@ public class XinPga implements Plugin, Listener {
         }).start();
     }
 
-    // 私聊发送方法
     // 私聊发送方法
     private void sendPrivateMessages() {
         List<String> messages = config.getMessages();
@@ -171,7 +174,7 @@ public class XinPga implements Plugin, Listener {
                     String message = messages.get(i);
                     // 私聊模式不添加随机字符串
                     Bot.Instance.sendCommand("msg " + playerName + " " + message);
-                    getLogger().info("已发送私聊消息给玩家：" + playerName + " 内容: " + message);
+                    //getLogger().info("已发送私聊消息给玩家：" + playerName + " 内容: " + message);
 
                     // 如果不是最后一条消息，则等待指定间隔
                     if (i < messages.size() - 1) {
@@ -206,15 +209,20 @@ public class XinPga implements Plugin, Listener {
         try {
             config.loadConfig();
         } catch (Exception e) {
-            throw new RuntimeException("[XinPga] 无法加载配置", e);
+            throw new RuntimeException("错误：无法加载配置", e);
         }
+    }
+
+    public void cmdUpdatePlayerList() {
+        PrivateMessageSender.updateOnlinePlayerList();
+        outLog("信息：已手动更新在线玩家列表");
     }
 
     public void saveConfig() {
         try {
             config.saveConfig();
         } catch (Exception e) {
-            throw new RuntimeException("[XinPga] 无法保存配置", e);
+            throw new RuntimeException("错误：无法保存配置", e);
         }
     }
 
@@ -227,44 +235,44 @@ public class XinPga implements Plugin, Listener {
         config.setEnabled(true);
         saveConfig();
         startScheduler();
-        outLog("[XinPga] 已启动定时发送");
+        outLog("任务：已启动定时发送");
     }
 
     public void cmdStop() {
         config.setEnabled(false);
         saveConfig();
         stopScheduler();
-        outLog("[XinPga] 已停止定时发送");
+        outLog("任务：已停止定时发送");
     }
 
     public void cmdString(String txt) {
         // 为了兼容性，将单条消息替换为消息列表
         config.setMessages(List.of(txt));
         saveConfig();
-        outLog("[XinPga] 发送内容已改为: " + txt);
+        outLog("信息：发送内容已改为: " + txt);
     }
 
     // 新增添加消息的命令方法
     public void cmdAddMessage(String message) {
         config.addMessage(message);
         saveConfig();
-        outLog("[XinPga] 已添加消息: " + message);
+        outLog("信息：已添加消息: " + message);
     }
 
     // 新增移除消息的命令方法
     public void cmdRemoveMessage(String message) {
         config.removeMessage(message);
         saveConfig();
-        outLog("[XinPga] 已移除消息: " + message);
+        outLog("信息：已移除消息: " + message);
     }
 
     // 新增列出所有消息的命令方法
     public void cmdListMessages() {
         List<String> messages = config.getMessages();
         if (messages.isEmpty()) {
-            outLog("[XinPga] 消息列表为空");
+            outLog("信息：消息列表为空");
         } else {
-            outLog("[XinPga] 消息列表:");
+            outLog("信息：消息列表:");
             for (int i = 0; i < messages.size(); i++) {
                 outLog((i + 1) + ". " + messages.get(i));
             }
@@ -274,7 +282,7 @@ public class XinPga implements Plugin, Listener {
     public void cmdTime(int sec) {
         config.setIntervalSeconds(sec);
         saveConfig();
-        outLog("[XinPga] 发送间隔已改为: " + sec + " 秒");
+        outLog("信息：发送间隔已改为: " + sec + " 秒");
         if (isRunning()) {
             stopScheduler();
             startScheduler();
@@ -287,7 +295,7 @@ public class XinPga implements Plugin, Listener {
             XinPga.SendMode sendMode = XinPga.SendMode.valueOf(mode.toUpperCase());
             config.setSendMode(sendMode);
             saveConfig();
-            outLog("[XinPga] 发送模式已改为: " + mode);
+            outLog("信息：发送模式已改为: " + mode);
 
             // 如果正在运行，重启任务以应用新模式
             if (isRunning()) {
@@ -295,7 +303,7 @@ public class XinPga implements Plugin, Listener {
                 startScheduler();
             }
         } catch (IllegalArgumentException e) {
-            outError("[XinPga] 无效的发送模式: " + mode + "，有效值为: PUBLIC, PRIVATE");
+            outError("警告：无效的发送模式: " + mode + "，有效值为: PUBLIC, PRIVATE");
         }
     }
 
@@ -303,7 +311,7 @@ public class XinPga implements Plugin, Listener {
     public void cmdPrivateInterval(int seconds) {
         config.setPrivateMessageInterval(seconds);
         saveConfig();
-        outLog("[XinPga] 私聊发送间隔已改为: " + seconds + " 秒");
+        outLog("信息：私聊发送间隔已改为: " + seconds + " 秒");
 
         // 如果正在运行且是私聊模式，重启任务以应用新间隔
         if (isRunning() && config.getSendMode() == XinPga.SendMode.PRIVATE) {
@@ -316,34 +324,34 @@ public class XinPga implements Plugin, Listener {
     public void cmdMessageInterval(int seconds) {
         config.setMessageInterval(seconds);
         saveConfig();
-        outLog("[XinPga] 消息发送间隔已改为: " + seconds + " 秒");
+        outLog("信息：消息发送间隔已改为: " + seconds + " 秒");
     }
 
     // 添加黑名单管理方法
     public void cmdAddToBlacklist(String playerName) {
         config.addToBlacklist(playerName);
         saveConfig();
-        outLog("[XinPga] 已将玩家 " + playerName + " 添加到私聊黑名单");
+        outLog("信息：已将玩家 " + playerName + " 添加到私聊黑名单");
     }
 
     public void cmdRemoveFromBlacklist(String playerName) {
         config.removeFromBlacklist(playerName);
         saveConfig();
-        outLog("[XinPga] 已将玩家 " + playerName + " 从私聊黑名单中移除");
+        outLog("信息：已将玩家 " + playerName + " 从私聊黑名单中移除");
     }
 
     public void cmdListBlacklist() {
         List<String> blacklist = config.getPrivateMessageBlacklist();
         if (blacklist.isEmpty()) {
-            outLog("[XinPga] 私聊黑名单为空");
+            outLog("信息：私聊黑名单为空");
         } else {
-            outLog("[XinPga] 私聊黑名单玩家列表: " + String.join(", ", blacklist));
+            outLog("信息：私聊黑名单玩家列表: " + String.join(", ", blacklist));
         }
     }
 
     public void cmdReload() {
         loadConfig();
-        outLog("[XinPga] 配置文件已重载");
+        outLog("信息：配置文件已重载");
         if (config.isEnabled() && !isRunning()) startScheduler();
         if (!config.isEnabled() && isRunning()) stopScheduler();
     }
