@@ -16,6 +16,7 @@
 | `/xpa mode <PUBLIC/PRIVATE&>` | 设置发送模式 |
 | `/xpa privateinterval <秒>` | 设置私聊发送间隔 |
 | `/xpa messageinterval <秒>` | 设置消息间发送间隔 |
+| `/xpa updateplayerlist` | 手动更新在线玩家列表 |
 | `/xpa blacklist add <玩家名>` | 添加玩家到私聊黑名单 |
 | `/xpa blacklist remove <玩家名>` | 从私聊黑名单移除玩家 |
 | `/xpa blacklist list` | 列出私聊黑名单 |
