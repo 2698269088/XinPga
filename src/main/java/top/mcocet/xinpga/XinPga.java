@@ -3,6 +3,7 @@ package top.mcocet.xinpga;
 
 import org.geysermc.mcprotocollib.auth.GameProfile;
 import xin.bbtt.mcbot.Bot;
+import xin.bbtt.mcbot.command.Command;
 import xin.bbtt.mcbot.event.EventHandler;
 import xin.bbtt.mcbot.event.Listener;
 import xin.bbtt.mcbot.events.LoginSuccessEvent;
@@ -40,7 +41,7 @@ public class XinPga implements Plugin, Listener {
     @Override
     public void onEnable() {
         outLog("XinPga 插件已启用");
-        outLog("XinPga 版本: v1.3.2");
+        outLog("XinPga 版本: v1.4");
         loadConfig();
         Bot.Instance.getPluginManager().events().registerEvents(this, this);
         Bot.Instance.getPluginManager().registerCommand(new XpaCommand(), new XpaCommandExecutor(), this);
@@ -140,6 +141,28 @@ public class XinPga implements Plugin, Listener {
         outLog("黑名单玩家: " + String.join(", ", blacklist));
     }
 
+    // 添加管理员管理方法
+    public void cmdAddAdministrator(String playerName) {
+        config.addAdministrator(playerName);
+        saveConfig();
+        outLog("信息：已将玩家 " + playerName + " 添加到管理员列表");
+    }
+
+    public void cmdRemoveAdministrator(String playerName) {
+        config.removeAdministrator(playerName);
+        saveConfig();
+        outLog("信息：已将玩家 " + playerName + " 从管理员列表中移除");
+    }
+
+    public void cmdListAdministrators() {
+        List<String> admins = config.getAdministrators();
+        if (admins.isEmpty()) {
+            outLog("信息：管理员列表为空");
+        } else {
+            outLog("信息：管理员列表: " + String.join(", ", admins));
+        }
+    }
+
     // 获取当前应该发送消息的玩家（不改变索引）
     private String getCurrentPlayer() {
         // 获取当前在线玩家列表
@@ -208,6 +231,89 @@ public class XinPga implements Plugin, Listener {
         }).start();
     }
 
+    // 处理私聊命令
+    @EventHandler
+    public void onPrivateMessage(xin.bbtt.mcbot.events.PrivateChatEvent event) {
+        // 获取发送者名称和消息内容
+        String playerName = event.getSender().getName();
+        String message = event.getMessage();
+
+        // 检查玩家是否是管理员
+        if (config.isAdministrator(playerName)) {
+            // 检查消息是否以命令关键字开头
+            if (message.startsWith("#command xpa ") || message.startsWith("#cmd xpa ")) {
+                // 提取命令部分
+                String command = message.substring(message.indexOf("xpa ") + 4);
+                outLog("收到来自管理员 " + playerName + " 的命令: " + command);
+
+                // 执行命令
+                executeAdminCommand(playerName, command);
+            }
+        }
+    }
+
+    // 执行管理员命令
+    private void executeAdminCommand(String playerName, String command) {
+        String[] args = command.split(" ");
+
+        try {
+            // 创建命令执行器并执行命令，捕获输出
+            XpaCommandExecutor executor = new XpaCommandExecutor();
+            List<String> output = executor.onCommandWithOutput(new Command() {
+                @Override
+                public String getName() {
+                    return "xpa";
+                }
+
+                @Override
+                public String getUsage() {
+                    return "/xpa [command]";
+                }
+
+                @Override
+                public String[] getAliases() {
+                    return new String[0];
+                }
+
+                @Override
+                public String getDescription() {
+                    return "XinPga 定时宣传";
+                }
+            }, "xpa", args);
+
+            // 将输出结果通过私聊发送给管理员
+            for (String line : output) {
+                Bot.Instance.sendCommand("msg " + playerName + " " + line);
+            }
+
+            outLog("管理员 " + playerName + " 执行命令: " + command);
+        } catch (Exception e) {
+            // 更详细的错误信息
+            String errorMsg = "管理员 " + playerName + " 执行命令 '" + command + "' 时出错: " + e.getMessage();
+            Bot.Instance.sendCommand("msg " + playerName + " 命令执行出错，请检查命令格式");
+            outError(errorMsg);
+            //e.printStackTrace(); // 输出详细堆栈信息便于调试
+        } catch (Throwable t) {
+            // 捕获更严重的错误
+            String errorMsg = "管理员 " + playerName + " 执行命令 '" + command + "' 时发生严重错误: " + t.getMessage();
+            Bot.Instance.sendCommand("msg " + playerName + " 命令执行发生严重错误");
+            outError(errorMsg);
+            //t.printStackTrace();
+        }
+    }
+
+    public void cmdString(int index, String txt) {
+        List<String> messages = new ArrayList<>(config.getMessages());
+        if (index >= 0 && index < messages.size()) {
+            messages.set(index, txt);
+            config.setMessages(messages);
+            saveConfig();
+            outLog("信息：第 " + (index + 1) + " 条发送内容已改为: " + txt);
+        } else {
+            outError("错误：编号超出范围，当前共有 " + messages.size() + " 条消息");
+            outWarn("提示：请使用 xpa listmessages 命令列出所有发送消息");
+        }
+    }
 
     private void stopScheduler() {
         if (task != null) {

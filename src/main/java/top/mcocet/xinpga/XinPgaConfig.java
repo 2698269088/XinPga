@@ -17,8 +17,9 @@ public class XinPgaConfig {
     private int randomLength;
     private XinPga.SendMode sendMode;
     private int privateMessageInterval;
-    private List<String> privateMessageBlacklist; // 新增黑名单配置
+    private List<String> privateMessageBlacklist; // 黑名单配置
     private int messageInterval; // 每条消息之间的发送间隔
+    private List<String> administrators; // 管理员名单
 
     public XinPgaConfig(Path configPath) {
         this.configPath = configPath;
@@ -33,6 +34,7 @@ public class XinPgaConfig {
         this.privateMessageInterval = 5;
         this.privateMessageBlacklist = new ArrayList<>();
         this.messageInterval = 1; // 默认每条消息间隔1秒
+        this.administrators = new ArrayList<>(); // 初始化管理员列表
     }
 
     public void loadConfig() throws IOException {
@@ -87,6 +89,16 @@ public class XinPgaConfig {
         } else {
             privateMessageBlacklist = new ArrayList<>();
         }
+
+        // 读取管理员配置
+        if (root.has("administrators") && root.get("administrators").isJsonArray()) {
+            administrators = new ArrayList<>();
+            for (JsonElement element : root.getAsJsonArray("administrators")) {
+                administrators.add(element.getAsString());
+            }
+        } else {
+            administrators = new ArrayList<>();
+        }
     }
 
     public void saveConfig() throws IOException {
@@ -114,6 +126,15 @@ public class XinPgaConfig {
         }
         root.add("privateMessageBlacklist", blacklistArray);
 
+        // 保存管理员配置
+        JsonArray administratorsArray = new JsonArray();
+        for (String admin : administrators) {
+            administratorsArray.add(admin);
+        }
+        root.add("administrators", administratorsArray);
+
+        Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(root));
+
         Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(root));
     }
 
@@ -138,10 +159,38 @@ public class XinPgaConfig {
         defaultBlacklist.add("e_2");
         def.add("privateMessageBlacklist", defaultBlacklist);
 
+        // 添加默认管理员
+        JsonArray defaultAdministrators = new JsonArray();
+        def.add("administrators", defaultAdministrators);
+
         Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(def));
     }
 
     // Getters and Setters
+
+    // 管理员相关方法
+    public List<String> getAdministrators() {
+        return administrators;
+    }
+
+    public void setAdministrators(List<String> administrators) {
+        this.administrators = new ArrayList<>(administrators);
+    }
+
+    public void addAdministrator(String playerName) {
+        if (!administrators.contains(playerName)) {
+            administrators.add(playerName);
+        }
+    }
+
+    public void removeAdministrator(String playerName) {
+        administrators.remove(playerName);
+    }
+
+    public boolean isAdministrator(String playerName) {
+        return administrators.contains(playerName);
+    }
+
     public boolean isEnabled() {
         return enabled;
     }

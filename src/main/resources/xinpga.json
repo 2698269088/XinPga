@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "intervalSeconds": 40,
   "messages": [
     "你好啊",
@@ -8,8 +8,8 @@
   "appendRandomString": true,
   "randomLength": 5,
   "sendMode": "PRIVATE",
-  "privateMessageInterval": 2,
-  "messageInterval": 1,
+  "privateMessageInterval": 10,
+  "messageInterval":4,
   "privateMessageBlacklist": [
     "e_2"
   ]
