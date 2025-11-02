@@ -15,6 +15,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public class XinPga implements Plugin, Listener {
+    public volatile boolean isRunning = false; // 是否运行
 
     /* -------- 单例 -------- */
     public static XinPga INSTANCE;
@@ -24,7 +25,7 @@ public class XinPga implements Plugin, Listener {
 
     /* -------- 运行时 -------- */
     private final Path configPath;
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService scheduler; // ✅ 移除了 final，允许重新创建
     private ScheduledFuture<?> task;
     private final Random random = new Random();
 
@@ -32,6 +33,7 @@ public class XinPga implements Plugin, Listener {
         INSTANCE = this;
         this.configPath = Path.of("plugin", "XinPga", "config.json");
         this.config = new XinPgaConfig(configPath);
+        this.scheduler = Executors.newSingleThreadScheduledExecutor(); // ✅ 在构造函数中初始化
     }
 
     /* -------- 生命周期 -------- */
@@ -41,23 +43,51 @@ public class XinPga implements Plugin, Listener {
     @Override
     public void onEnable() {
         outLog("XinPga 插件已启用");
-        outLog("XinPga 版本: v1.4");
+        outLog("XinPga 版本: v1.5");
         loadConfig();
         Bot.Instance.getPluginManager().events().registerEvents(this, this);
         Bot.Instance.getPluginManager().registerCommand(new XpaCommand(), new XpaCommandExecutor(), this);
+
+        // ✅ 确保线程池可用
+        ensureSchedulerAvailable();
+
         if (config.isEnabled()) startScheduler();
     }
 
-
     @Override
     public void onDisable() {
-        stopScheduler();
+        stopScheduler(); // 只停止任务，不关闭线程池
         outLog("XinPga 插件已关闭");
     }
 
     @Override
     public void onUnload() {
+        // ✅ 只在卸载时关闭线程池
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.shutdown();
+            try {
+                if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                    scheduler.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                scheduler.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
         outLog("XinPga 插件已卸载");
+    }
+
+    // ✅ 添加线程池状态检查方法
+    private boolean isSchedulerAvailable() {
+        return scheduler != null && !scheduler.isShutdown() && !scheduler.isTerminated();
+    }
+
+    // ✅ 确保线程池可用
+    private void ensureSchedulerAvailable() {
+        if (!isSchedulerAvailable()) {
+            outLog("线程池不可用，重新创建...");
+            scheduler = Executors.newSingleThreadScheduledExecutor();
+        }
     }
 
     // 登录成功时启动调度器
@@ -69,15 +99,33 @@ public class XinPga implements Plugin, Listener {
 
     // 启动调度器
     private void startScheduler() {
-        if (task != null && !task.isDone()) return;
+        // ✅ 先停止现有任务
+        stopScheduler();
 
-        // 根据发送模式决定调度方式
-        if (config.getSendMode() == SendMode.PRIVATE) {
-            // 私聊模式使用固定速率调度
-            task = scheduler.scheduleAtFixedRate(this::sendPrivateMessages, 0, config.getPrivateMessageInterval(), TimeUnit.SECONDS);
-        } else {
-            // 公告模式保持原有逻辑
-            task = scheduler.scheduleAtFixedRate(this::sendOnce, 0, config.getIntervalSeconds(), TimeUnit.SECONDS);
+        // ✅ 确保线程池可用
+        ensureSchedulerAvailable();
+
+        isRunning = true;
+        PrivateMessageSender.updateOnlinePlayerList();
+
+        try {
+            if (config.getSendMode() == SendMode.PRIVATE) {
+                task = scheduler.scheduleWithFixedDelay(this::sendPrivateMessages, 0, config.getPrivateMessageInterval(), TimeUnit.SECONDS);
+            } else {
+                task = scheduler.scheduleAtFixedRate(this::sendOnce, 0, config.getIntervalSeconds(), TimeUnit.SECONDS);
+            }
+            outLog("调度器已启动，模式: " + config.getSendMode());
+        } catch (RejectedExecutionException e) {
+            outError("启动调度器失败，线程池不可用: " + e.getMessage());
+            // ✅ 尝试恢复
+            ensureSchedulerAvailable();
+            // 重新尝试
+            if (config.getSendMode() == SendMode.PRIVATE) {
+                task = scheduler.scheduleWithFixedDelay(this::sendPrivateMessages, 0, config.getPrivateMessageInterval(), TimeUnit.SECONDS);
+            } else {
+                task = scheduler.scheduleAtFixedRate(this::sendOnce, 0, config.getIntervalSeconds(), TimeUnit.SECONDS);
+            }
+            outLog("调度器恢复成功");
         }
     }
 
@@ -88,19 +136,30 @@ public class XinPga implements Plugin, Listener {
             return;
         }
 
-        // 使用单独的线程来发送多条消息，避免阻塞调度器
         new Thread(() -> {
             try {
                 for (int i = 0; i < messages.size(); i++) {
+                    // 在每次循环开始都检查停止标志
+                    if (!isRunning) {
+                        return;
+                    }
+
                     String message = messages.get(i);
+                    if (i == messages.size() - 1) {
+                        PrivateMessageSender.updateOnlinePlayerList();
+                    }
                     if (config.isAppendRandom()) {
                         message += " " + randomString(config.getRandomLength());
                     }
                     Bot.Instance.sendChatMessage(message);
 
-                    // 如果不是最后一条消息，则等待指定间隔
+                    // 可中断的等待
                     if (i < messages.size() - 1) {
-                        Thread.sleep(config.getMessageInterval() * 1000L);
+                        long waitTime = config.getMessageInterval() * 1000L;
+                        long startTime = System.currentTimeMillis();
+                        while (isRunning && (System.currentTimeMillis() - startTime) < waitTime) {
+                            Thread.sleep(100);
+                        }
                     }
                 }
             } catch (InterruptedException e) {
@@ -115,11 +174,8 @@ public class XinPga implements Plugin, Listener {
         if (messages.isEmpty()) {
             return;
         }
-
-        // 获取下一个要发送消息的玩家
         String currentPlayer = PrivateMessageSender.getNextPlayer();
         if (currentPlayer != null) {
-            // 发送所有消息给这个玩家
             PrivateMessageSender.sendPrivateMessagesToPlayer(currentPlayer, messages, false, 0);
         }
     }
@@ -190,13 +246,11 @@ public class XinPga implements Plugin, Listener {
         // 更新缓存的玩家列表（当列表发生变化时）
         if (!PrivateMessageSender.cachedPlayerList.equals(nonBlacklistedPlayers)) {
             PrivateMessageSender.cachedPlayerList = new ArrayList<>(nonBlacklistedPlayers);
-            // PrivateMessageSender.currentPlayerIndex.set(0); // 重置索引
         }
 
         // 获取当前玩家
         int index = PrivateMessageSender.currentPlayerIndex.get();
         if (index >= PrivateMessageSender.cachedPlayerList.size()) {
-            // PrivateMessageSender.currentPlayerIndex.set(0);
             index = 0;
         }
 
@@ -204,31 +258,6 @@ public class XinPga implements Plugin, Listener {
             return PrivateMessageSender.cachedPlayerList.get(index);
         }
         return null;
-    }
-
-    // 发送剩余消息给指定玩家
-    private void sendRemainingMessagesToPlayer(String playerName, List<String> messages) {
-        new Thread(() -> {
-            try {
-                for (int i = 0; i < messages.size(); i++) {
-                    String message = messages.get(i);
-                    // 私聊模式不添加随机字符串
-                    Bot.Instance.sendCommand("msg " + playerName + " " + message);
-                    //getLogger().info("已发送私聊消息给玩家：" + playerName + " 内容: " + message);
-
-                    // 如果不是最后一条消息，则等待指定间隔
-                    if (i < messages.size() - 1) {
-                        Thread.sleep(config.getMessageInterval() * 1000L);
-                    }
-                }
-                getLogger().info("已发送私聊消息给玩家：" + playerName);
-
-                // 所有消息发送完成后，移动到下一个玩家
-                PrivateMessageSender.currentPlayerIndex.incrementAndGet();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }).start();
     }
 
     // 处理私聊命令
@@ -288,17 +317,13 @@ public class XinPga implements Plugin, Listener {
 
             outLog("管理员 " + playerName + " 执行命令: " + command);
         } catch (Exception e) {
-            // 更详细的错误信息
             String errorMsg = "管理员 " + playerName + " 执行命令 '" + command + "' 时出错: " + e.getMessage();
             Bot.Instance.sendCommand("msg " + playerName + " 命令执行出错，请检查命令格式");
             outError(errorMsg);
-            //e.printStackTrace(); // 输出详细堆栈信息便于调试
         } catch (Throwable t) {
-            // 捕获更严重的错误
             String errorMsg = "管理员 " + playerName + " 执行命令 '" + command + "' 时发生严重错误: " + t.getMessage();
             Bot.Instance.sendCommand("msg " + playerName + " 命令执行发生严重错误");
             outError(errorMsg);
-            //t.printStackTrace();
         }
     }
 
@@ -316,8 +341,16 @@ public class XinPga implements Plugin, Listener {
     }
 
     private void stopScheduler() {
+        isRunning = false; // 先设置停止标志
         if (task != null) {
-            task.cancel(true); // 改为 true，立即中断正在进行的任务
+            task.cancel(true);
+            task = null;
+        }
+        // 等待一小段时间确保任务停止
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -355,6 +388,10 @@ public class XinPga implements Plugin, Listener {
     }
 
     public void cmdStart() {
+        if (isRunning) {
+            outLog("任务：任务已经在运行中！");
+            return;
+        }
         config.setEnabled(true);
         saveConfig();
         startScheduler();
@@ -362,6 +399,10 @@ public class XinPga implements Plugin, Listener {
     }
 
     public void cmdStop() {
+        if (!isRunning) {
+            outLog("任务：任务未运行！");
+            return;
+        }
         config.setEnabled(false);
         saveConfig();
         stopScheduler();
@@ -454,12 +495,14 @@ public class XinPga implements Plugin, Listener {
     public void cmdAddToBlacklist(String playerName) {
         config.addToBlacklist(playerName);
         saveConfig();
+        PrivateMessageSender.forceUpdate(); // 强制刷新缓存
         outLog("信息：已将玩家 " + playerName + " 添加到私聊黑名单");
     }
 
     public void cmdRemoveFromBlacklist(String playerName) {
         config.removeFromBlacklist(playerName);
         saveConfig();
+        PrivateMessageSender.forceUpdate(); // 强制刷新缓存
         outLog("信息：已将玩家 " + playerName + " 从私聊黑名单中移除");
     }
 
@@ -473,10 +516,17 @@ public class XinPga implements Plugin, Listener {
     }
 
     public void cmdReload() {
+        // ✅ 先停止当前任务
+        stopScheduler();
+
         loadConfig();
+        PrivateMessageSender.forceUpdate(); // 强制刷新缓存
         outLog("信息：配置文件已重载");
-        if (config.isEnabled() && !isRunning()) startScheduler();
-        if (!config.isEnabled() && isRunning()) stopScheduler();
+
+        // ✅ 重新启动任务（如果需要）
+        if (config.isEnabled()) {
+            startScheduler();
+        }
     }
 
     // 信息日志

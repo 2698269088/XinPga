@@ -134,8 +134,6 @@ public class XinPgaConfig {
         root.add("administrators", administratorsArray);
 
         Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(root));
-
-        Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(root));
     }
 
     private void createDefaultConfig() throws IOException {
@@ -146,6 +144,7 @@ public class XinPgaConfig {
         // 添加默认消息列表
         JsonArray defaultMessages = new JsonArray();
         defaultMessages.add("你好啊");
+        defaultMessages.add("本宣传工具基于xinbot框架制作，已在GitHub开源。xinbot带给您类Bukkit的插件开发体验（github.com/2698269088/XinPga）");
         def.add("messages", defaultMessages);
 
         def.addProperty("appendRandomString", true);

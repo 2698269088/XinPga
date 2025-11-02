@@ -12,16 +12,38 @@ import java.util.stream.Collectors;
 public class PrivateMessageSender {
     private static final Logger log = LoggerFactory.getLogger(PrivateMessageSender.class);
     static final AtomicInteger currentPlayerIndex = new AtomicInteger(0);
-    static List<String> cachedPlayerList = new ArrayList<>();
+    static List<String> cachedPlayerList = Collections.synchronizedList(new ArrayList<>());
     private static String botName = null;
+    private static volatile long lastUpdateTime = 0;
+    private static volatile int configVersion = 0; // 配置版本控制
 
     // 设置Bot名称
     public static void setBotName(String name) {
         botName = name;
     }
 
+    // 强制更新配置版本
+    public static void forceUpdate() {
+        configVersion++;
+        lastUpdateTime = 0; // 强制下次更新
+        cachedPlayerList.clear();
+        currentPlayerIndex.set(0);
+    }
+
     // 更新在线玩家列表
     public static void updateOnlinePlayerList() {
+        // 如果配置版本变化，强制更新
+        if (configVersion > 0 && System.currentTimeMillis() - lastUpdateTime < 5000) {
+            return;
+        }
+        lastUpdateTime = System.currentTimeMillis();
+        /*
+        // 可以考虑添加时间间隔限制，避免过于频繁的更新
+        if (System.currentTimeMillis() - lastUpdateTime < 1000) { // 1秒内只更新一次
+            return;
+        }
+        lastUpdateTime = System.currentTimeMillis();
+        */
         // 获取当前在线玩家列表
         Map<UUID, GameProfile> players = Bot.Instance.players;
 
@@ -101,40 +123,47 @@ public class PrivateMessageSender {
             try {
                 XinPga xinPga = XinPga.INSTANCE;
                 for (int i = 0; i < messages.size(); i++) {
-                    String message = messages.get(i);
-                    // 再次检查玩家是否仍然在线
-                    if (!isPlayerOnline(playerName)) {
-                        log.info("玩家 " + playerName + " 已离线，停止发送消息");
+                    // 检查停止标志
+                    if (!xinPga.isRunning) {
+                        log.info("检测到停止指令，中断发送给玩家: " + playerName);
                         return;
                     }
 
-                    // 私聊模式不添加随机字符串
-                    Bot.Instance.sendCommand("msg " + playerName + " " + message);
-                    //log.info("已发送私聊消息给玩家：" + playerName + " 内容: " + message);
+                    String message = messages.get(i);
+                    try {
+                        Bot.Instance.sendCommand("msg " + playerName + " " + message);
+                    } catch (Exception e) {
+                        log.error("发送私聊消息给玩家 {} 失败: {}", playerName, e.getMessage());
+                    }
 
-                    // 如果不是最后一条消息，则等待指定间隔
+                    // 如果不是最后一条消息，则等待指定间隔（可中断的等待）
                     if (i < messages.size() - 1) {
-                        Thread.sleep(xinPga.getConfig().getMessageInterval() * 1000L);
+                        long waitTime = xinPga.getConfig().getMessageInterval() * 1000L;
+                        long startTime = System.currentTimeMillis();
+                        // 可中断的等待
+                        while (xinPga.isRunning && (System.currentTimeMillis() - startTime) < waitTime) {
+                            try {
+                                Thread.sleep(100); // 每100ms检查一次
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                return;
+                            }
+                        }
+                        // 再次检查停止标志
+                        if (!xinPga.isRunning) {
+                            log.info("检测到停止指令，中断发送给玩家: " + playerName);
+                            return;
+                        }
                     }
                 }
                 log.info("已发送所有私聊消息给玩家：" + playerName);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+                log.error("发送私聊消息时发生错误: ", e);
             }
         }).start();
     }
 
-    // 保持原有的方法以保证兼容性
-    public static void sendPrivateMessages(String message) {
-        String playerName = getNextPlayer();
-        if (playerName != null) {
-            // 发送私聊消息
-            Bot.Instance.sendCommand("msg " + playerName + " " + message);
-            log.info("已发送私聊消息给玩家：" + playerName);
-        }
-    }
-
-    // 新增方法：获取当前玩家列表和索引状态（用于调试）
+    // 获取当前玩家列表和索引状态（用于调试）
     public static void printPlayerListStatus() {
         log.info("当前玩家列表: " + cachedPlayerList);
         log.info("当前索引: " + currentPlayerIndex.get());
