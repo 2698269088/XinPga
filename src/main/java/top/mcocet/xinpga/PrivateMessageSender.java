@@ -113,6 +113,11 @@ public class PrivateMessageSender {
 
     // 支持发送多条消息给同一个玩家
     public static void sendPrivateMessagesToPlayer(String playerName, List<String> messages, boolean appendRandom, int randomLength) {
+        // 检查是否被远程命令暂停
+        if (XinPga.INSTANCE.isSuspended) {
+            log.info("任务已被远程命令暂停，跳过发送给玩家: {}", playerName);
+            return;
+        }
         // 再次检查玩家是否在线且不在黑名单中
         if (!isPlayerOnline(playerName) || XinPga.INSTANCE.getConfig().isPlayerBlacklisted(playerName)) {
             log.info("玩家 " + playerName + " 不在线或在黑名单中，跳过发送");

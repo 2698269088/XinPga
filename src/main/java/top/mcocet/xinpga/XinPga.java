@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 public class XinPga implements Plugin, Listener {
     public volatile boolean isRunning = false; // 是否运行
+    public volatile boolean isSuspended = false; // 是否暂停
 
     /* -------- 单例 -------- */
     public static XinPga INSTANCE;
@@ -25,7 +26,7 @@ public class XinPga implements Plugin, Listener {
 
     /* -------- 运行时 -------- */
     private final Path configPath;
-    private ScheduledExecutorService scheduler; // ✅ 移除了 final，允许重新创建
+    private ScheduledExecutorService scheduler; // 移除了 final，允许重新创建
     private ScheduledFuture<?> task;
     private final Random random = new Random();
 
@@ -33,7 +34,7 @@ public class XinPga implements Plugin, Listener {
         INSTANCE = this;
         this.configPath = Path.of("plugin", "XinPga", "config.json");
         this.config = new XinPgaConfig(configPath);
-        this.scheduler = Executors.newSingleThreadScheduledExecutor(); // ✅ 在构造函数中初始化
+        this.scheduler = Executors.newSingleThreadScheduledExecutor(); // 在构造函数中初始化
     }
 
     /* -------- 生命周期 -------- */
@@ -43,12 +44,12 @@ public class XinPga implements Plugin, Listener {
     @Override
     public void onEnable() {
         outLog("XinPga 插件已启用");
-        outLog("XinPga 版本: v1.5");
+        outLog("XinPga 版本: v1.5.1");
         loadConfig();
         Bot.Instance.getPluginManager().events().registerEvents(this, this);
         Bot.Instance.getPluginManager().registerCommand(new XpaCommand(), new XpaCommandExecutor(), this);
 
-        // ✅ 确保线程池可用
+        // 确保线程池可用
         ensureSchedulerAvailable();
 
         if (config.isEnabled()) startScheduler();
@@ -62,7 +63,7 @@ public class XinPga implements Plugin, Listener {
 
     @Override
     public void onUnload() {
-        // ✅ 只在卸载时关闭线程池
+        // 只在卸载时关闭线程池
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdown();
             try {
@@ -77,12 +78,12 @@ public class XinPga implements Plugin, Listener {
         outLog("XinPga 插件已卸载");
     }
 
-    // ✅ 添加线程池状态检查方法
+    // 添加线程池状态检查方法
     private boolean isSchedulerAvailable() {
         return scheduler != null && !scheduler.isShutdown() && !scheduler.isTerminated();
     }
 
-    // ✅ 确保线程池可用
+    // 确保线程池可用
     private void ensureSchedulerAvailable() {
         if (!isSchedulerAvailable()) {
             outLog("线程池不可用，重新创建...");
@@ -98,11 +99,11 @@ public class XinPga implements Plugin, Listener {
     }
 
     // 启动调度器
-    private void startScheduler() {
-        // ✅ 先停止现有任务
+    public void startScheduler() {
+        // 先停止现有任务
         stopScheduler();
 
-        // ✅ 确保线程池可用
+        // 确保线程池可用
         ensureSchedulerAvailable();
 
         isRunning = true;
@@ -117,7 +118,7 @@ public class XinPga implements Plugin, Listener {
             outLog("调度器已启动，模式: " + config.getSendMode());
         } catch (RejectedExecutionException e) {
             outError("启动调度器失败，线程池不可用: " + e.getMessage());
-            // ✅ 尝试恢复
+            // 尝试恢复
             ensureSchedulerAvailable();
             // 重新尝试
             if (config.getSendMode() == SendMode.PRIVATE) {
@@ -170,6 +171,11 @@ public class XinPga implements Plugin, Listener {
 
     // 私聊发送方法
     private void sendPrivateMessages() {
+        // 如果任务被远程命令暂停，则不执行任务
+        if (isSuspended) {
+            return;
+        }
+
         List<String> messages = config.getMessages();
         if (messages.isEmpty()) {
             return;
@@ -340,7 +346,7 @@ public class XinPga implements Plugin, Listener {
         }
     }
 
-    private void stopScheduler() {
+    public void stopScheduler() {
         isRunning = false; // 先设置停止标志
         if (task != null) {
             task.cancel(true);
@@ -516,14 +522,14 @@ public class XinPga implements Plugin, Listener {
     }
 
     public void cmdReload() {
-        // ✅ 先停止当前任务
+        // 先停止当前任务
         stopScheduler();
 
         loadConfig();
         PrivateMessageSender.forceUpdate(); // 强制刷新缓存
         outLog("信息：配置文件已重载");
 
-        // ✅ 重新启动任务（如果需要）
+        // 重新启动任务（如果需要）
         if (config.isEnabled()) {
             startScheduler();
         }
@@ -542,6 +548,14 @@ public class XinPga implements Plugin, Listener {
     // 警告日志
     public void outWarn(String log){
         getLogger().warn( log);
+    }
+
+    public void outSuspend(String log) {
+        getLogger().info("[任务暂停] " + log);
+    }
+
+    public void outResume(String log) {
+        getLogger().info("[任务恢复] " + log);
     }
 
     // 发送模式枚举

@@ -164,8 +164,29 @@ public class XpaCommandExecutor extends TabExecutor {
     // 该方法已迁移到PrivateMessageCommand中
     public List<String> onCommandWithOutput(Command cmd, String label, String[] args) {
         List<String> output = new ArrayList<>();
-        PrivateMessageCommand pmc = new PrivateMessageCommand();
-        return pmc.pmcWithOutput(cmd, label, args);
+
+        // 暂停私聊宣传任务
+        XinPga.INSTANCE.isSuspended = true; // 标记任务暂停
+        XinPga.INSTANCE.stopScheduler();    // 停止调度器
+        output.add("信息：任务已暂停，开始执行远程命令");
+
+        // 执行远程命令的逻辑
+        try {
+            // 添加对私聊消息的捕获逻辑
+            PrivateMessageCommand pmc = new PrivateMessageCommand();
+            output.addAll(pmc.pmcWithOutput(cmd, label, args));
+        } catch (Exception e) {
+            output.add("错误：命令执行失败: " + e.getMessage());
+        } finally {
+            // 恢复私聊宣传任务
+            if (XinPga.INSTANCE.getConfig().isEnabled()) { // 如果任务之前是启用的
+                XinPga.INSTANCE.startScheduler();       // 重新启动调度器
+                XinPga.INSTANCE.isSuspended = false;    // 清除暂停标志
+                output.add("信息：任务恢复，远程命令执行完成");
+            }
+        }
+
+        return output;
     }
 
     private void showHelp() {
