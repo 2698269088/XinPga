@@ -45,7 +45,7 @@ public class XinPga implements Plugin, Listener {
     @Override
     public void onEnable() {
         getLogger().info("XinPga 插件已启用");
-        getLogger().info("XinPga 版本: v1.5.2.2");
+        getLogger().info("XinPga 版本: v1.5.2.3");
 
         loadConfig();
 
