@@ -79,28 +79,44 @@
 ```json
 {
   // 是否启用插件功能
-  "enabled": false,
-  // 公告模式下的发送间隔（秒）
+  "enabled": true,
+  
+  // 公告发送间隔（秒）
   "intervalSeconds": 40,
-  // 要发送的消息列表
+  
+  // 宣传消息列表
   "messages": [
     "你好啊",
     "本宣传工具基于xinbot框架制作，已在GitHub开源。xinbot带给您类Bukkit的插件开发体验（github.com/2698269088/XinPga）"
   ],
-  // 是否在消息末尾追加随机字符串
+  
+  // 是否在消息末尾添加随机字符串
   "appendRandomString": true,
+  
   // 随机字符串长度
   "randomLength": 5,
-  // 发送模式：PUBLIC（公告）或 PRIVATE（私聊）
+  
+  // 发送模式（PUBLIC=公屏发送，PRIVATE=私聊发送）
   "sendMode": "PRIVATE",
-  // 私聊模式下的发送间隔（秒）
-  "privateMessageInterval": 2,
-  // 多条消息之间的发送间隔（秒）
-  "messageInterval": 1,
-  // 私聊黑名单玩家列表
+  
+  // 私聊消息发送间隔（秒）
+  "privateMessageInterval": 10,
+  
+  // 消息间发送间隔（秒）
+  "messageInterval": 4,
+  
+  // 私聊黑名单列表
   "privateMessageBlacklist": [
     "e_2"
   ],
+  
   // 管理员列表
-  "administrators": []
+  "administrators": [],
+  
+  // 是否启用远程命令功能
+  "remoteCommandEnabled": true,
+  
+  // 是否启用远程命令的admin功能
+  "remoteCommandAdminEnabled": false
+}
 }
