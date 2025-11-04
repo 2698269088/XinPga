@@ -119,4 +119,3 @@
   // 是否启用远程命令的admin功能
   "remoteCommandAdminEnabled": false
 }
-}
