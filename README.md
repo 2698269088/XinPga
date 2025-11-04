@@ -60,7 +60,9 @@
 - `blacklist remove <玩家名>` - 从私聊黑名单移除玩家
 - `blacklist list` - 列出私聊黑名单
 - `reload` - 重载配置文件
-- `debug` - 显示插件信息
+- `admin add <玩家名>` - 添加玩家到管理员列表
+- `admin remove <玩家名>` - 从管理员列表移除玩家
+- `admin list` - 列出管理员
 
 ### 需要配置才能通过远程命令使用的功能
 
