@@ -38,6 +38,20 @@ public class XinPga implements Plugin, Listener {
     }
 
     @Override
+    public String getName() {
+        return "XinPga";
+    }
+
+    @Override
+    public String getVersion() {
+        return "1.5.3";
+    }
+
+    public String name(){
+        return ("XinPga");
+    }
+
+    @Override
     public void onLoad() {
         getLogger().info("XinPga 插件已加载");
     }
@@ -45,7 +59,7 @@ public class XinPga implements Plugin, Listener {
     @Override
     public void onEnable() {
         getLogger().info("XinPga 插件已启用");
-        getLogger().info("XinPga 版本: v1.5.2.3");
+        getLogger().info("XinPga 版本: v1.5.3");
 
         loadConfig();
 
@@ -83,8 +97,6 @@ public class XinPga implements Plugin, Listener {
             scheduler.start();
         }
     }
-
-    // 在 XinPga.java 文件中找到 randomString 方法，将其替换为以下内容：
 
     public String randomString(int len) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";

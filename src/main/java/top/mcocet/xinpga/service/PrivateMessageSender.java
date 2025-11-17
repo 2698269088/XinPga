@@ -31,7 +31,8 @@ public class PrivateMessageSender {
     }
 
     public static void updateOnlinePlayerList() {
-        if (configVersion > 0 && System.currentTimeMillis() - lastUpdateTime < 5000) {
+        // 减少缓存时间限制，使其适应更短的消息间隔设置
+        if (configVersion > 0 && System.currentTimeMillis() - lastUpdateTime < 500) {
             return;
         }
         lastUpdateTime = System.currentTimeMillis();
@@ -105,6 +106,7 @@ public class PrivateMessageSender {
             try {
                 XinPga xinPga = XinPga.INSTANCE;
                 for (int i = 0; i < messages.size(); i++) {
+                    // 更频繁地检查运行状态
                     if (!xinPga.isRunning) {
                         log.info("检测到停止指令，中断发送给玩家: " + playerName);
                         return;
@@ -123,18 +125,23 @@ public class PrivateMessageSender {
                         log.error("发送私聊消息给玩家 {} 失败: {}", playerName, e.getMessage());
                     }
 
+                    // 如果不是最后一条消息，则等待
                     if (i < messages.size() - 1) {
                         long waitTime = xinPga.getConfig().getMessageInterval() * 1000L;
                         long startTime = System.currentTimeMillis();
+                        
+                        // 使用更短的睡眠间隔以提高响应性
                         while (xinPga.isRunning && (System.currentTimeMillis() - startTime) < waitTime) {
                             try {
-                                Thread.sleep(100);
+                                Thread.sleep(Math.min(50, waitTime - (System.currentTimeMillis() - startTime)));
                             } catch (InterruptedException e) {
                                 Thread.currentThread().interrupt();
+                                log.info("发送给玩家 " + playerName + " 的消息被中断");
                                 return;
                             }
                         }
 
+                        // 再次检查运行状态
                         if (!xinPga.isRunning) {
                             log.info("检测到停止指令，中断发送给玩家: " + playerName);
                             return;

@@ -34,6 +34,7 @@ public class CommandHandler {
         }
     }
 
+
     private void handleStringCommand(String[] args) {
         if (args.length < 3) {
             log.info("用法: /xpa string <编号> <新文本>");

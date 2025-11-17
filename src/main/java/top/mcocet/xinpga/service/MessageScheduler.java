@@ -54,8 +54,10 @@ public class MessageScheduler {
             task.cancel(true);
             task = null;
         }
+        
+        // 增加等待时间并使用中断机制确保线程及时停止
         try {
-            Thread.sleep(100);
+            Thread.sleep(200);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
