@@ -55,6 +55,9 @@ public class MessageScheduler {
             task = null;
         }
         
+        // 强制中断所有正在进行的发送线程
+        PrivateMessageSender.interruptAllSendingThreads();
+        
         // 增加等待时间并使用中断机制确保线程及时停止
         try {
             Thread.sleep(200);

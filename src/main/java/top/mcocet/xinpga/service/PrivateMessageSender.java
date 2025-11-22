@@ -18,6 +18,9 @@ public class PrivateMessageSender {
     private static String botName = null;
     private static volatile long lastUpdateTime = 0;
     private static volatile int configVersion = 0;
+    
+    // 用于跟踪所有正在发送消息的线程
+    private static final Set<Thread> activeSendingThreads = Collections.synchronizedSet(new HashSet<>());
 
     public static void setBotName(String name) {
         botName = name;
@@ -102,8 +105,11 @@ public class PrivateMessageSender {
             return;
         }
 
-        new Thread(() -> {
+        Thread sendingThread = new Thread(() -> {
             try {
+                // 将当前线程添加到活动线程集合中
+                activeSendingThreads.add(Thread.currentThread());
+                
                 XinPga xinPga = XinPga.INSTANCE;
                 for (int i = 0; i < messages.size(); i++) {
                     // 更频繁地检查运行状态
@@ -151,8 +157,28 @@ public class PrivateMessageSender {
                 log.info("已发送所有私聊消息给玩家：" + playerName);
             } catch (Exception e) {
                 log.error("发送私聊消息时发生错误: ", e);
+            } finally {
+                // 无论正常结束还是异常退出，都要从活动线程集合中移除
+                activeSendingThreads.remove(Thread.currentThread());
             }
-        }).start();
+        });
+        
+        sendingThread.start();
+    }
+    
+    /**
+     * 强制中断所有正在进行的消息发送线程
+     */
+    public static void interruptAllSendingThreads() {
+        synchronized (activeSendingThreads) {
+            for (Thread thread : activeSendingThreads) {
+                if (thread != null && thread.isAlive()) {
+                    thread.interrupt();
+                    log.info("已中断发送线程: " + thread.getName());
+                }
+            }
+            activeSendingThreads.clear();
+        }
     }
 
     public static void printPlayerListStatus() {

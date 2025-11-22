@@ -54,7 +54,6 @@ public class PrivateMessageHandler {
             if (XinPga.INSTANCE.getConfig().isEnabled()) {
                 XinPga.INSTANCE.getScheduler().start();
                 XinPga.INSTANCE.isSuspended = false;
-                output.add("信息：任务恢复，远程命令执行完成");
             }
         }
 
@@ -91,8 +90,17 @@ public class PrivateMessageHandler {
             output.add("用法: /xpa removemessage <消息内容>");
         } else {
             String message = String.join(" ", args).substring(args[0].length() + 1);
-            XinPga.INSTANCE.cmdRemoveMessage(message);
-            output.add("信息：已移除消息: " + message);
+            boolean removed = XinPga.INSTANCE.getConfig().getMessages().remove(message);
+            if (removed) {
+                try {
+                    XinPga.INSTANCE.getConfig().saveConfig();
+                    output.add("信息：已移除消息: " + message);
+                } catch (Exception e) {
+                    output.add("错误：保存配置文件失败: " + e.getMessage());
+                }
+            } else {
+                output.add("错误：未找到消息: " + message);
+            }
         }
     }
 
@@ -101,7 +109,7 @@ public class PrivateMessageHandler {
         if (messages.isEmpty()) {
             output.add("信息：消息列表为空");
         } else {
-            output.add("信息：消息列表:");
+            output.add("信息：消息列表 (" + messages.size() + " 条):");
             for (int i = 0; i < messages.size(); i++) {
                 output.add((i + 1) + ". " + messages.get(i));
             }
@@ -164,8 +172,44 @@ public class PrivateMessageHandler {
         }
     }
 
+    private void handleBlacklistCommandWithOutput(String[] args, List<String> output) {
+        if (args.length < 2) {
+            output.add("用法: /xpa blacklist add <玩家名> | remove <玩家名> | list");
+        } else {
+            switch (args[1].toLowerCase()) {
+                case "add" -> {
+                    if (args.length < 3) {
+                        output.add("用法: /xpa blacklist add <玩家名>");
+                    } else {
+                        XinPga.INSTANCE.cmdAddToBlacklist(args[2]);
+                        output.add("信息：已将玩家 " + args[2] + " 添加到私聊黑名单");
+                    }
+                }
+                case "remove" -> {
+                    if (args.length < 3) {
+                        output.add("用法: /xpa blacklist remove <玩家名>");
+                    } else {
+                        XinPga.INSTANCE.cmdRemoveFromBlacklist(args[2]);
+                        output.add("信息：已将玩家 " + args[2] + " 从私聊黑名单中移除");
+                    }
+                }
+                case "list" -> {
+                    List<String> blacklist = XinPga.INSTANCE.getConfig().getPrivateMessageBlacklist();
+                    if (blacklist.isEmpty()) {
+                        output.add("信息：私聊黑名单为空");
+                    } else {
+                        output.add("信息：私聊黑名单 (" + blacklist.size() + " 个玩家):");
+                        output.add(String.join(", ", blacklist));
+                    }
+                }
+                default -> output.add("错误：未知的黑名单子命令！用法: /xpa blacklist add <玩家名> | remove <玩家名> | list");
+            }
+        }
+    }
+
     private void handleAdminCommandWithOutput(String[] args, List<String> output) {
         // 检查远程命令的admin功能是否启用
+        // 这个检查只应该在远程命令中进行，控制台命令不应该受此限制
         if (!XinPga.INSTANCE.getConfig().isRemoteCommandAdminEnabled()) {
             output.add("错误：远程命令的admin功能已被禁用，请在配置文件中启用");
             return;
@@ -201,40 +245,6 @@ public class PrivateMessageHandler {
                     }
                 }
                 default -> output.add("错误：未知的管理员子命令！用法: /xpa admin add <玩家名> | remove <玩家名> | list");
-            }
-        }
-    }
-
-    private void handleBlacklistCommandWithOutput(String[] args, List<String> output) {
-        if (args.length < 2) {
-            output.add("用法: /xpa blacklist add <玩家名> | remove <玩家名> | list");
-        } else {
-            switch (args[1].toLowerCase()) {
-                case "add" -> {
-                    if (args.length < 3) {
-                        output.add("用法: /xpa blacklist add <玩家名>");
-                    } else {
-                        XinPga.INSTANCE.cmdAddToBlacklist(args[2]);
-                        output.add("信息：已将玩家 " + args[2] + " 添加到私聊黑名单");
-                    }
-                }
-                case "remove" -> {
-                    if (args.length < 3) {
-                        output.add("用法: /xpa blacklist remove <玩家名>");
-                    } else {
-                        XinPga.INSTANCE.cmdRemoveFromBlacklist(args[2]);
-                        output.add("信息：已将玩家 " + args[2] + " 从私聊黑名单中移除");
-                    }
-                }
-                case "list" -> {
-                    List<String> blacklist = XinPga.INSTANCE.getConfig().getPrivateMessageBlacklist();
-                    if (blacklist.isEmpty()) {
-                        output.add("信息：私聊黑名单为空");
-                    } else {
-                        output.add("信息：私聊黑名单玩家列表: " + String.join(", ", blacklist));
-                    }
-                }
-                default -> output.add("未知的黑名单子命令！用法: /xpa blacklist add <玩家名> | remove <玩家名> | list");
             }
         }
     }

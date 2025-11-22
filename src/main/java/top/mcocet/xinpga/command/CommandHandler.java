@@ -117,11 +117,8 @@ public class CommandHandler {
     }
 
     private void handleAdminCommand(String[] args) {
-        // 检查远程命令的admin功能是否启用
-        if (!XinPga.INSTANCE.getConfig().isRemoteCommandAdminEnabled()) {
-            log.warn("远程命令的admin功能已被禁用，请在配置文件中启用");
-            return;
-        }
+        // 注意：这个方法只被控制台命令调用，不应该检查remoteCommandAdminEnabled
+        // remoteCommandAdminEnabled只应该限制远程命令，不应该限制控制台命令
 
         if (args.length < 2) {
             log.info("用法: /xpa admin add <玩家名> | remove <玩家名> | list");

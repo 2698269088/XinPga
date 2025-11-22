@@ -44,7 +44,7 @@ public class XinPga implements Plugin, Listener {
 
     @Override
     public String getVersion() {
-        return "1.5.3";
+        return "1.6";
     }
 
     public String name(){
@@ -59,7 +59,7 @@ public class XinPga implements Plugin, Listener {
     @Override
     public void onEnable() {
         getLogger().info("XinPga 插件已启用");
-        getLogger().info("XinPga 版本: v1.5.3");
+        getLogger().info("XinPga 版本: v1.6");
 
         loadConfig();
 
