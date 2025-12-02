@@ -8,6 +8,7 @@
 |------|------|
 | `/xpa start` | 启动定时发送 |
 | `/xpa stop` | 停止定时发送 |
+| `/xpa forcestop` | 强制中断定时发送 |
 | `/xpa string <编号> <文本>` | 设置指定编号的发送内容 |
 | `/xpa addmessage <消息>` | 添加消息到发送列表 |
 | `/xpa removemessage <消息>` | 从发送列表移除消息 |
@@ -47,6 +48,7 @@
 
 - `start` - 启动定时发送
 - `stop` - 停止定时发送
+- `forcestop` - 强制中断定时发送
 - `string <编号> <文本>` - 设置指定编号的发送内容
 - `addmessage <消息>` - 添加消息到发送列表
 - `removemessage <消息>` - 从发送列表移除消息
