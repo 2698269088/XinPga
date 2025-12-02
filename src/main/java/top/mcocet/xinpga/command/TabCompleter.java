@@ -10,7 +10,7 @@ public class TabCompleter {
             return List.of("start", "stop", "string", "addmessage", "removemessage",
                     "listmessages", "time", "mode", "privateinterval",
                     "messageinterval", "reload", "help", "blacklist",
-                    "admin", "updateplayerlist", "debug");
+                    "admin", "updateplayerlist", "debug","forcestop");
         } else if (args.length == 2 && args[0].equals("mode")) {
             return List.of("PUBLIC", "PRIVATE");
         } else if (args.length == 2 && args[0].equals("blacklist")) {

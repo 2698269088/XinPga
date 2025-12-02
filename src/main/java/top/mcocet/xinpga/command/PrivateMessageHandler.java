@@ -46,6 +46,10 @@ public class PrivateMessageHandler {
                 case "blacklist" -> handleBlacklistCommandWithOutput(args, output);
                 case "admin" -> handleAdminCommandWithOutput(args, output);
                 case "debug" -> output.add("无法在远程命令下使用该功能！");
+                case "forcestop" -> {
+                    XinPga.INSTANCE.cmdForceStop();
+                    output.add("信息：已强制中断所有任务");
+                }
                 case "help" -> output.addAll(showHelpOutput());
                 default -> output.add("未知子命令: " + args[0] + "！请查看GitHub中的命令帮助");
             }

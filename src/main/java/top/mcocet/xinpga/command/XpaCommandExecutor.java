@@ -70,6 +70,7 @@ public class XpaCommandExecutor extends TabExecutor {
                 case "blacklist" -> handleBlacklistCommandWithOutput(args, output);
                 case "admin" -> handleAdminCommandWithOutput(args, output);
                 case "help" -> output.addAll(showHelpOutput());
+                case "forcestop" -> handleForceStopCommandWithOutput(args, output);
                 default -> output.add("未知子命令: " + args[0] + "！请使用 /xpa help 查看帮助");
             }
         } catch (Exception e) {
@@ -96,6 +97,11 @@ public class XpaCommandExecutor extends TabExecutor {
                 output.add("错误：编号超出范围！");
             }
         }
+    }
+
+    private void handleForceStopCommandWithOutput(String[] args, List<String> output){
+        XinPga.INSTANCE.cmdForceStop();
+        output.add("信息：已强制停止所有任务");
     }
 
     // 处理 addmessage 命令

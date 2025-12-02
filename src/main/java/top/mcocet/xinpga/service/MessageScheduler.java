@@ -26,6 +26,12 @@ public class MessageScheduler {
 
     public void start() {
         stop();
+        // 等待确保任务完全停止后再启动新任务
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         ensureSchedulerAvailable();
 
         xinPga.isRunning = true;
@@ -45,6 +51,30 @@ public class MessageScheduler {
         } catch (RejectedExecutionException e) {
             log.error("启动调度器失败，线程池不可用: " + e.getMessage());
             ensureSchedulerAvailable();
+        }
+    }
+
+    public void forceStop() {
+        // 立即强制停止所有任务
+        xinPga.isRunning = false;
+        
+        // 取消定时任务
+        if (task != null) {
+            task.cancel(true);
+            task = null;
+        }
+        
+        // 强制中断所有正在进行的发送线程
+        PrivateMessageSender.interruptAllSendingThreads();
+        
+        // 强制关闭线程池
+        if (scheduler != null) {
+            try {
+                scheduler.shutdownNow();
+            } catch (Exception e) {
+                // 忽略异常
+            }
+            scheduler = null;
         }
     }
 

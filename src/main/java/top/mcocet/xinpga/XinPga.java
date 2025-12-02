@@ -44,7 +44,7 @@ public class XinPga implements Plugin, Listener {
 
     @Override
     public String getVersion() {
-        return "1.6";
+        return "1.6.1";
     }
 
     public String name(){
@@ -59,7 +59,7 @@ public class XinPga implements Plugin, Listener {
     @Override
     public void onEnable() {
         getLogger().info("XinPga 插件已启用");
-        getLogger().info("XinPga 版本: v1.6");
+        getLogger().info("XinPga 版本: v1.6.1");
 
         loadConfig();
 
@@ -237,6 +237,14 @@ public class XinPga implements Plugin, Listener {
     }
 
     // 命令方法
+
+    public void cmdForceStop(){
+        if (scheduler != null) {
+            scheduler.forceStop();
+        }
+        // 强制设置运行状态为false
+        isRunning = false;
+    }
     public void cmdStart() {
         if (commandService != null) {
             commandService.handleStart();

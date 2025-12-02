@@ -30,10 +30,15 @@ public class CommandHandler {
             case "debug" -> XinPga.INSTANCE.cmdDebugPlayerList();
             case "admin" -> handleAdminCommand(args);
             case "blacklist" -> handleBlacklistCommand(args);
+            case "forcestop" -> forceStop(args);
             default -> log.warn("未知子命令: " + args[0] + "！用法: " + cmd.getUsage());
         }
     }
 
+    private void forceStop(String[] args){
+        XinPga.INSTANCE.cmdForceStop();
+        log.info("信息：已强制中断所有任务");
+    }
 
     private void handleStringCommand(String[] args) {
         if (args.length < 3) {
