@@ -111,6 +111,18 @@ public class PrivateMessageSender {
                 activeSendingThreads.add(Thread.currentThread());
                 
                 XinPga xinPga = XinPga.INSTANCE;
+                
+                // 处理问候语
+                String greetingMessage = null;
+                if (xinPga.getConfig().isGreetingEnabled()) {
+                    String format = xinPga.getConfig().getGreetingFormat();
+                    if (format.contains("#name#")) {
+                        greetingMessage = format.replace("#name#", playerName);
+                    } else {
+                        greetingMessage = format;
+                    }
+                }
+                
                 for (int i = 0; i < messages.size(); i++) {
                     // 更频繁地检查运行状态
                     if (!xinPga.isRunning) {
@@ -119,6 +131,12 @@ public class PrivateMessageSender {
                     }
 
                     String message = messages.get(i);
+                    
+                    // 如果启用了问候语，则在每条消息前添加问候语
+                    if (greetingMessage != null) {
+                        message = greetingMessage + message;
+                    }
+                    
                     // 本来私聊模式是不会添加随机字符串的
                     // 但是不知道为什么，重构后的代码莫名其妙的加上字符串了
                     // 我懒得找原因了，直接在这里添加一个判断，去除随机字符串

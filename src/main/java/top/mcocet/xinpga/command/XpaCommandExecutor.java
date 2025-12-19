@@ -71,6 +71,8 @@ public class XpaCommandExecutor extends TabExecutor {
                 case "admin" -> handleAdminCommandWithOutput(args, output);
                 case "help" -> output.addAll(showHelpOutput());
                 case "forcestop" -> handleForceStopCommandWithOutput(args, output);
+                case "randomsending" -> handleRandomSendingCommandWithOutput(args, output);
+                case "greeting" -> handleGreetingCommandWithOutput(args, output);
                 default -> output.add("未知子命令: " + args[0] + "！请使用 /xpa help 查看帮助");
             }
         } catch (Exception e) {
@@ -79,6 +81,37 @@ public class XpaCommandExecutor extends TabExecutor {
         }
 
         return output;
+    }
+
+    // 处理 greeting 命令
+    private void handleGreetingCommandWithOutput(String[] args, List<String> output) {
+        if (args.length < 2) {
+            output.add("用法: /xpa greeting <enable|disable|format> [格式]");
+            return;
+        }
+
+        switch (args[1].toLowerCase()) {
+            case "enable" -> {
+                XinPga.INSTANCE.cmdSetGreetingEnabled(true);
+                output.add("信息：已启用问候语功能");
+            }
+            case "disable" -> {
+                XinPga.INSTANCE.cmdSetGreetingEnabled(false);
+                output.add("信息：已禁用问候语功能");
+            }
+            case "format" -> {
+                if (args.length < 3) {
+                    output.add("用法: /xpa greeting format <格式>");
+                    output.add("提示：格式中可以使用 #name# 来表示玩家名");
+                    return;
+                }
+                
+                String format = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+                XinPga.INSTANCE.cmdSetGreetingFormat(format);
+                output.add("信息：已设置问候语格式为: " + format);
+            }
+            default -> output.add("错误：参数必须是 enable、disable 或 format");
+        }
     }
 
     // 处理 string 命令
@@ -102,6 +135,28 @@ public class XpaCommandExecutor extends TabExecutor {
     private void handleForceStopCommandWithOutput(String[] args, List<String> output){
         XinPga.INSTANCE.cmdForceStop();
         output.add("信息：已强制停止所有任务");
+    }
+
+    // 处理 randomSending 命令
+    private void handleRandomSendingCommandWithOutput(String[] args, List<String> output) {
+        if (args.length < 2) {
+            output.add("用法: /xpa randomSending <on|off>");
+            return;
+        }
+        
+        switch (args[1].toLowerCase()) {
+            case "on":
+                XinPga.INSTANCE.cmdSetRandomSending(true);
+                output.add("信息：已启用随机发送模式");
+                break;
+            case "off":
+                XinPga.INSTANCE.cmdSetRandomSending(false);
+                output.add("信息：已禁用随机发送模式");
+                break;
+            default:
+                output.add("错误：参数必须是 on 或 off");
+                break;
+        }
     }
 
     // 处理 addmessage 命令
@@ -320,6 +375,9 @@ public class XpaCommandExecutor extends TabExecutor {
         output.add("#command xpa mode <PUBLIC|PRIVATE> - 设置发送模式");
         output.add("#command xpa privateinterval <秒> - 设置私聊发送间隔");
         output.add("#command xpa messageinterval <秒> - 设置消息间发送间隔");
+        output.add("#command xpa randomSending <on|off> - 设置随机发送模式");
+        output.add("#command xpa greeting <enable|disable> - 控制问候语开关");
+        output.add("#command xpa greeting format [格式] - 修改问候语格式，以#name#做玩家占位符");
         output.add("#command xpa updateplayerlist - 手动更新在线玩家列表");
         output.add("#command xpa blacklist add <玩家名> - 添加玩家到私聊黑名单");
         output.add("#command xpa blacklist remove <玩家名> - 从私聊黑名单移除玩家");

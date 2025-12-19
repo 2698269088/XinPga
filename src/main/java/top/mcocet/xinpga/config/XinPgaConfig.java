@@ -23,6 +23,9 @@ public class XinPgaConfig {
     private List<String> administrators = new ArrayList<>(); // 管理员列表
     private boolean remoteCommandEnabled = true; // 远程命令是否启用
     private boolean remoteCommandAdminEnabled = false; // 远程命令的admin功能是否启用
+    private boolean randomSendingEnabled = false; // 是否启用随机发送功能
+    private boolean greetingEnabled = false; // 是否启用问候语功能
+    private String greetingFormat = "hi，你好#name#，"; // 问候语格式
 
     public XinPgaConfig(Path configPath) {
         this.configPath = configPath;
@@ -75,6 +78,20 @@ public class XinPgaConfig {
                 administrators.add(element.getAsString());
             }
         }
+
+        // 加载随机发送设置
+        if (root.has("randomSendingEnabled")) {
+            randomSendingEnabled = root.get("randomSendingEnabled").getAsBoolean();
+        }
+        
+        // 加载问候语设置
+        if (root.has("greetingEnabled")) {
+            greetingEnabled = root.get("greetingEnabled").getAsBoolean();
+        }
+        
+        if (root.has("greetingFormat")) {
+            greetingFormat = root.get("greetingFormat").getAsString();
+        }
     }
 
     public void saveConfig() throws IOException {
@@ -102,6 +119,13 @@ public class XinPgaConfig {
         JsonArray adminArray = new JsonArray();
         administrators.forEach(a -> adminArray.add(a));
         root.add("administrators", adminArray);
+        
+        // 保存随机发送设置
+        root.addProperty("randomSendingEnabled", randomSendingEnabled);
+        
+        // 保存问候语设置
+        root.addProperty("greetingEnabled", greetingEnabled);
+        root.addProperty("greetingFormat", greetingFormat);
 
         Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(root));
     }
@@ -140,6 +164,13 @@ public class XinPgaConfig {
         // 远程命令配置项
         def.addProperty("remoteCommandEnabled", true);
         def.addProperty("remoteCommandAdminEnabled", false);
+        
+        // 随机发送功能配置项
+        def.addProperty("randomSendingEnabled", false);
+        
+        // 问候语功能配置项
+        def.addProperty("greetingEnabled", false);
+        def.addProperty("greetingFormat", "hi，#name#，");
 
         Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(def));
     }
@@ -277,5 +308,31 @@ public class XinPgaConfig {
 
     public void setRemoteCommandAdminEnabled(boolean remoteCommandAdminEnabled) {
         this.remoteCommandAdminEnabled = remoteCommandAdminEnabled;
+    }
+    
+    // 随机发送功能相关方法
+    public boolean isRandomSendingEnabled() {
+        return randomSendingEnabled;
+    }
+
+    public void setRandomSendingEnabled(boolean randomSendingEnabled) {
+        this.randomSendingEnabled = randomSendingEnabled;
+    }
+    
+    // 问候语功能相关方法
+    public boolean isGreetingEnabled() {
+        return greetingEnabled;
+    }
+
+    public void setGreetingEnabled(boolean greetingEnabled) {
+        this.greetingEnabled = greetingEnabled;
+    }
+
+    public String getGreetingFormat() {
+        return greetingFormat;
+    }
+
+    public void setGreetingFormat(String greetingFormat) {
+        this.greetingFormat = greetingFormat;
     }
 }

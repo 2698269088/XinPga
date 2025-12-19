@@ -255,7 +255,7 @@ public class PrivateMessageHandler {
 
     private List<String> showHelpOutput() {
         List<String> output = new ArrayList<>();
-        output.add("=== XinPga 插件帮助 ===");
+        output.add("=== XinPga 插件远程命令帮助 ===");
         output.add("/xpa start - 启动定时发送");
         output.add("/xpa stop - 停止定时发送");
         output.add("/xpa string <编号> <文本> - 设置发送内容");
@@ -266,11 +266,18 @@ public class PrivateMessageHandler {
         output.add("/xpa mode <PUBLIC|PRIVATE> - 设置发送模式");
         output.add("/xpa privateinterval <秒> - 设置私聊发送间隔");
         output.add("/xpa messageinterval <秒> - 设置消息间发送间隔");
+        output.add("/xpa randomSending <on|off> - 设置随机发送模式");
+        output.add("/xpa greeting <enable|disable> - 控制问候语开关");
+        output.add("/xpa greeting format [格式] - 修改问候语格式，以#name#做玩家占位符");
         output.add("/xpa updateplayerlist - 手动更新在线玩家列表");
         output.add("/xpa blacklist add <玩家名> - 添加玩家到私聊黑名单");
         output.add("/xpa blacklist remove <玩家名> - 从私聊黑名单移除玩家");
         output.add("/xpa blacklist list - 列出私聊黑名单");
+        output.add("/xpa admin add <玩家名> - 添加玩家到管理员列表");
+        output.add("/xpa admin remove <玩家名> - 从管理员列表移除玩家");
+        output.add("/xpa admin list - 列出管理员");
         output.add("/xpa reload - 重载配置文件");
+        output.add("/xpa debug - 显示调试信息");
         output.add("/xpa help - 显示此帮助信息");
         return output;
     }

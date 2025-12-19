@@ -15,5 +15,8 @@
   ],
   "administrators": [],
   "remoteCommandEnabled": true,
-  "remoteCommandAdminEnabled": false
+  "remoteCommandAdminEnabled": false,
+  "randomSendingEnabled": false,
+  "greetingEnabled": false,
+  "greetingFormat": "hi，#name#，"
 }

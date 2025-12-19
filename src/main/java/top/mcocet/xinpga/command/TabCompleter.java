@@ -10,13 +10,17 @@ public class TabCompleter {
             return List.of("start", "stop", "string", "addmessage", "removemessage",
                     "listmessages", "time", "mode", "privateinterval",
                     "messageinterval", "reload", "help", "blacklist",
-                    "admin", "updateplayerlist", "debug","forcestop");
+                    "admin", "updateplayerlist", "debug","forcestop", "randomsending", "greeting");
         } else if (args.length == 2 && args[0].equals("mode")) {
             return List.of("PUBLIC", "PRIVATE");
         } else if (args.length == 2 && args[0].equals("blacklist")) {
             return List.of("add", "remove", "list");
         } else if (args.length == 2 && args[0].equals("admin")) {
             return List.of("add", "remove", "list");
+        } else if (args.length == 2 && args[0].equals("randomsending")) {
+            return List.of("on", "off");
+        } else if (args.length == 2 && args[0].equals("greeting")) {
+            return List.of("enable", "disable", "format");
         }
         return List.of();
     }

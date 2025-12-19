@@ -108,27 +108,45 @@ public class MessageScheduler {
 
         new Thread(() -> {
             try {
-                for (int i = 0; i < messages.size(); i++) {
+                // 如果启用了随机发送，则只发送一条随机消息
+                if (config.isRandomSendingEnabled()) {
                     if (!xinPga.isRunning) return;
-
-                    String message = messages.get(i);
+                    
+                    // 随机选择一条消息
+                    String message = messages.get((int) (Math.random() * messages.size()));
                     if (config.isAppendRandom()) {
                         message += " " + xinPga.randomString(config.getRandomLength());
                     }
                     Bot.Instance.sendChatMessage(message);
+                    
+                    // 添加控制台提示
+                    if (xinPga.isRunning) {
+                        log.info("已随机发送一条公告信息");
+                    }
+                } else {
+                    // 原有的顺序发送所有消息逻辑
+                    for (int i = 0; i < messages.size(); i++) {
+                        if (!xinPga.isRunning) return;
 
-                    if (i < messages.size() - 1) {
-                        long waitTime = config.getMessageInterval() * 1000L;
-                        long startTime = System.currentTimeMillis();
-                        while (xinPga.isRunning && (System.currentTimeMillis() - startTime) < waitTime) {
-                            Thread.sleep(100);
+                        String message = messages.get(i);
+                        if (config.isAppendRandom()) {
+                            message += " " + xinPga.randomString(config.getRandomLength());
+                        }
+                        Bot.Instance.sendChatMessage(message);
+
+                        if (i < messages.size() - 1) {
+                            long waitTime = config.getMessageInterval() * 1000L;
+                            long startTime = System.currentTimeMillis();
+                            while (xinPga.isRunning && (System.currentTimeMillis() - startTime) < waitTime) {
+                                Thread.sleep(100);
+                            }
                         }
                     }
-                }
 
-                // 在所有消息发送完毕后添加控制台提示
-                if (xinPga.isRunning) {
-                    log.info("本次公告已发送完毕，准备开始发送新一轮信息");
+                    // 在所有消息发送完毕后添加控制台提示
+                    if (xinPga.isRunning) {
+                        log.info("本次公告已发送完毕，准备开始发送新一轮信息");
+                    }
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -144,7 +162,13 @@ public class MessageScheduler {
 
         String currentPlayer = PrivateMessageSender.getNextPlayer();
         if (currentPlayer != null) {
-            PrivateMessageSender.sendPrivateMessagesToPlayer(currentPlayer, messages, config.isAppendRandom(), config.getRandomLength());
+            // 如果启用了随机发送，则只发送一条随机消息
+            if (config.isRandomSendingEnabled()) {
+                String message = messages.get((int) (Math.random() * messages.size()));
+                PrivateMessageSender.sendPrivateMessagesToPlayer(currentPlayer, List.of(message), config.isAppendRandom(), config.getRandomLength());
+            } else {
+                PrivateMessageSender.sendPrivateMessagesToPlayer(currentPlayer, messages, config.isAppendRandom(), config.getRandomLength());
+            }
         }
     }
 

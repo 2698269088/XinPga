@@ -39,16 +39,12 @@ public class XinPga implements Plugin, Listener {
 
     @Override
     public String getName() {
-        return "XinPga";
+        return ("XinPga");
     }
 
     @Override
     public String getVersion() {
         return "1.6.1";
-    }
-
-    public String name(){
-        return ("XinPga");
     }
 
     @Override
@@ -59,7 +55,7 @@ public class XinPga implements Plugin, Listener {
     @Override
     public void onEnable() {
         getLogger().info("XinPga 插件已启用");
-        getLogger().info("XinPga 版本: v1.6.1");
+        getLogger().info("XinPga 版本: v1.7");
 
         loadConfig();
 
@@ -392,6 +388,30 @@ public class XinPga implements Plugin, Listener {
     public void cmdDebugPlayerList() {
         if (commandService != null) {
             commandService.handleDebugPlayerList();
+        } else {
+            getLogger().error("CommandService 未初始化");
+        }
+    }
+
+    public void cmdSetRandomSending(boolean enabled) {
+        if (commandService != null) {
+            commandService.handleSetRandomSending(enabled);
+        } else {
+            getLogger().error("CommandService 未初始化");
+        }
+    }
+
+    public void cmdSetGreetingEnabled(boolean enabled) {
+        if (commandService != null) {
+            commandService.handleSetGreetingEnabled(enabled);
+        } else {
+            getLogger().error("CommandService 未初始化");
+        }
+    }
+
+    public void cmdSetGreetingFormat(String format) {
+        if (commandService != null) {
+            commandService.handleSetGreetingFormat(format);
         } else {
             getLogger().error("CommandService 未初始化");
         }

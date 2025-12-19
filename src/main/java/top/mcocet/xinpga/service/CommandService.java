@@ -184,6 +184,30 @@ public class CommandService {
         xinPga.outLog("当前Bot名称: " + xinPga.getBotName());
     }
 
+    public void handleSetRandomSending(boolean enabled) {
+        config.setRandomSendingEnabled(enabled);
+        saveConfig();
+        xinPga.outLog("信息：随机发送模式已" + (enabled ? "启用" : "禁用"));
+        
+        // 如果正在运行，重启调度器以应用更改
+        if (xinPga.isRunning) {
+            scheduler.stop();
+            scheduler.start();
+        }
+    }
+
+    public void handleSetGreetingEnabled(boolean enabled) {
+        config.setGreetingEnabled(enabled);
+        saveConfig();
+        xinPga.outLog("信息：问候语功能已" + (enabled ? "启用" : "禁用"));
+    }
+
+    public void handleSetGreetingFormat(String format) {
+        config.setGreetingFormat(format);
+        saveConfig();
+        xinPga.outLog("信息：问候语格式已设置为: " + format);
+    }
+
     private void saveConfig() {
         try {
             config.saveConfig();
