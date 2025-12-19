@@ -17,6 +17,9 @@
 | `/xpa mode <PUBLIC/PRIVATE>` | 设置发送模式 |
 | `/xpa privateinterval <秒>` | 设置私聊发送间隔 |
 | `/xpa messageinterval <秒>` | 设置消息间发送间隔 |
+| `/xpa randomSending <on|off> | 设置随机发送模式 |
+| `/xpa greeting <enable|disable> | 控制问候语开关 |
+| `/xpa greeting format <格式> | 修改问候语格式，以#name#做玩家占位符 |
 | `/xpa updateplayerlist` | 手动更新在线玩家列表 |
 | `/xpa blacklist add <玩家名>` | 添加玩家到私聊黑名单 |
 | `/xpa blacklist remove <玩家名>` | 从私聊黑名单移除玩家 |
@@ -57,6 +60,9 @@
 - `mode <PUBLIC/PRIVATE>` - 设置发送模式
 - `privateinterval <秒>` - 设置私聊发送间隔
 - `messageinterval <秒>` - 设置消息间发送间隔
+- `randomSending <on|off> - 设置随机发送模式
+- `greeting <enable|disable> - 控制问候语开关
+- `greeting format <格式> - 修改问候语格式，以#name#做玩家占位符
 - `updateplayerlist` - 手动更新在线玩家列表
 - `blacklist add <玩家名>` - 添加玩家到私聊黑名单
 - `blacklist remove <玩家名>` - 从私聊黑名单移除玩家
@@ -84,42 +90,37 @@
 {
   // 是否启用插件功能
   "enabled": true,
-  
   // 公告发送间隔（秒）
   "intervalSeconds": 40,
-  
   // 宣传消息列表
   "messages": [
     "你好啊",
     "本宣传工具基于xinbot框架制作，已在GitHub开源。xinbot带给您类Bukkit的插件开发体验（github.com/2698269088/XinPga）"
   ],
-  
   // 是否在消息末尾添加随机字符串
   "appendRandomString": true,
-  
   // 随机字符串长度
   "randomLength": 5,
-  
   // 发送模式（PUBLIC=公屏发送，PRIVATE=私聊发送）
   "sendMode": "PRIVATE",
-  
   // 私聊消息发送间隔（秒）
   "privateMessageInterval": 10,
-  
   // 消息间发送间隔（秒）
   "messageInterval": 4,
-  
   // 私聊黑名单列表
   "privateMessageBlacklist": [
     "e_2"
   ],
-  
   // 管理员列表
   "administrators": [],
-  
   // 是否启用远程命令功能
   "remoteCommandEnabled": true,
-  
   // 是否启用远程命令的admin功能
   "remoteCommandAdminEnabled": false
+  // 是否启用随机发送功能
+  "randomSendingEnabled": false,
+  // 是否启用问候语
+  "greetingEnabled": false,
+  // 修改问候语格式，以#name#做玩家占位符
+  "greetingFormat": "hi，#name#，"
 }
