@@ -17,9 +17,9 @@
 | `/xpa mode <PUBLIC/PRIVATE>` | 设置发送模式 |
 | `/xpa privateinterval <秒>` | 设置私聊发送间隔 |
 | `/xpa messageinterval <秒>` | 设置消息间发送间隔 |
-| `/xpa randomSending <on|off> | 设置随机发送模式 |
-| `/xpa greeting <enable|disable> | 控制问候语开关 |
-| `/xpa greeting format <格式> | 修改问候语格式，以#name#做玩家占位符 |
+| `/xpa randomSending <on|off>` | 设置随机发送模式 |
+| `/xpa greeting <enable|disable>` | 控制问候语开关 |
+| `/xpa greeting format <格式>` | 修改问候语格式，以#name#做玩家占位符 |
 | `/xpa updateplayerlist` | 手动更新在线玩家列表 |
 | `/xpa blacklist add <玩家名>` | 添加玩家到私聊黑名单 |
 | `/xpa blacklist remove <玩家名>` | 从私聊黑名单移除玩家 |
