@@ -7,10 +7,10 @@ import java.util.List;
 public class TabCompleter {
     public List<String> getCompletions(Command cmd, String label, String[] args) {
         if (args.length == 1) {
-            return List.of("start", "stop", "string", "addmessage", "removemessage",
+            return List.of("start", "stop", "multistart", "multistop", "string", "addmessage", "removemessage",
                     "listmessages", "time", "mode", "privateinterval",
                     "messageinterval", "reload", "help", "blacklist",
-                    "admin", "updateplayerlist", "debug","forcestop", "randomsending", "greeting");
+                    "admin", "updateplayerlist", "debug","forcestop", "randomsending", "greeting", "numberreplacement", "minconsecutive");
         } else if (args.length == 2 && args[0].equals("mode")) {
             return List.of("PUBLIC", "PRIVATE");
         } else if (args.length == 2 && args[0].equals("blacklist")) {
@@ -21,6 +21,8 @@ public class TabCompleter {
             return List.of("on", "off");
         } else if (args.length == 2 && args[0].equals("greeting")) {
             return List.of("enable", "disable", "format");
+        } else if (args.length == 2 && args[0].equals("numberreplacement")) {
+            return List.of("on", "off");
         }
         return List.of();
     }

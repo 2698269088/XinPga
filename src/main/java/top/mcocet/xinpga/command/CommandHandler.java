@@ -16,6 +16,8 @@ public class CommandHandler {
         switch (args[0].toLowerCase()) {
             case "start" -> XinPga.INSTANCE.cmdStart();
             case "stop" -> XinPga.INSTANCE.cmdStop();
+            case "multistart" -> XinPga.INSTANCE.cmdStartMultiThread();
+            case "multistop" -> XinPga.INSTANCE.cmdStopMultiThread();
             case "string" -> handleStringCommand(args);
             case "addmessage" -> handleAddMessageCommand(args);
             case "removemessage" -> handleRemoveMessageCommand(args);
@@ -33,7 +35,49 @@ public class CommandHandler {
             case "forcestop" -> forceStop(args);
             case "randomsending" -> handleRandomSendingCommand(args);
             case "greeting" -> handleGreetingCommand(args);
+            case "numberreplacement" -> handleNumberReplacementCommand(args);
+            case "minconsecutive" -> handleMinConsecutiveCommand(args);
             default -> log.warn("未知子命令: " + args[0] + "！用法: " + cmd.getUsage());
+        }
+    }
+
+    private void handleNumberReplacementCommand(String[] args) {
+        if (args.length < 2) {
+            log.info("用法: /xpa numberreplacement <on|off>");
+            return;
+        }
+        
+        switch (args[1].toLowerCase()) {
+            case "on":
+                XinPga.INSTANCE.cmdSetNumberReplacementEnabled(true);
+                log.info("信息：已启用数字替换功能");
+                break;
+            case "off":
+                XinPga.INSTANCE.cmdSetNumberReplacementEnabled(false);
+                log.info("信息：已禁用数字替换功能");
+                break;
+            default:
+                log.warn("错误：参数必须是 on 或 off");
+                break;
+        }
+    }
+
+    private void handleMinConsecutiveCommand(String[] args) {
+        if (args.length < 2) {
+            log.info("用法: /xpa minconsecutive <数字>");
+            return;
+        }
+        
+        try {
+            int minConsecutive = Integer.parseInt(args[1]);
+            if (minConsecutive <= 0) {
+                log.warn("错误：最少连续数字数量必须大于0！");
+                return;
+            }
+            XinPga.INSTANCE.cmdSetMinConsecutiveNumbers(minConsecutive);
+            log.info("信息：已设置最少连续数字数量为: " + minConsecutive);
+        } catch (NumberFormatException e) {
+            log.warn("错误：参数必须是整数！");
         }
     }
 
@@ -233,6 +277,8 @@ public class CommandHandler {
         log.info("=== XinPga 插件帮助 ===");
         log.info("/xpa start - 启动定时发送");
         log.info("/xpa stop - 停止定时发送");
+        log.info("/xpa multistart - 启动多线程公告发送（仅在公告模式下可用）");
+        log.info("/xpa multistop - 停止多线程公告发送");
         log.info("/xpa string <编号> <文本> - 设置发送内容");
         log.info("/xpa addmessage <消息> - 添加消息到发送列表");
         log.info("/xpa removemessage <消息> - 从发送列表移除消息");
@@ -242,6 +288,8 @@ public class CommandHandler {
         log.info("/xpa privateinterval <秒> - 设置私聊发送间隔");
         log.info("/xpa messageinterval <秒> - 设置消息间发送间隔");
         log.info("/xpa randomSending <on|off> - 设置随机发送模式");
+        log.info("/xpa numberreplacement <on|off> - 设置数字替换功能");
+        log.info("/xpa minconsecutive <数字> - 设置最少连续数字数量");
         log.info("/xpa greeting <enable|disable> - 控制问候语开关");
         log.info("/xpa greeting format [格式] - 修改问候语格式，以#name#做玩家占位符");
         log.info("/xpa updateplayerlist - 手动更新在线玩家列表");

@@ -3,6 +3,7 @@ package top.mcocet.xinpga;
 import top.mcocet.xinpga.service.PrivateMessageSender;
 import top.mcocet.xinpga.service.MessageScheduler;
 import top.mcocet.xinpga.service.CommandService;
+import top.mcocet.xinpga.service.MultiThreadAnnouncementSender; // 导入新的多线程发送器
 import xin.bbtt.mcbot.Bot;
 import xin.bbtt.mcbot.event.EventHandler;
 import xin.bbtt.mcbot.event.Listener;
@@ -44,7 +45,7 @@ public class XinPga implements Plugin, Listener {
 
     @Override
     public String getVersion() {
-        return "1.6.1";
+        return "1.9";
     }
 
     @Override
@@ -55,7 +56,7 @@ public class XinPga implements Plugin, Listener {
     @Override
     public void onEnable() {
         getLogger().info("XinPga 插件已启用");
-        getLogger().info("XinPga 版本: v1.7");
+        getLogger().info("XinPga 版本: v1.9");
 
         loadConfig();
 
@@ -68,6 +69,9 @@ public class XinPga implements Plugin, Listener {
         if (config.isEnabled()) {
             scheduler.start();
         }
+        
+        // 设置多线程发送器的bot名称
+        MultiThreadAnnouncementSender.setBotName(Bot.Instance.getProtocol().getProfile().getName());
     }
 
     @Override
@@ -89,6 +93,7 @@ public class XinPga implements Plugin, Listener {
     @EventHandler
     public void onLogin(LoginSuccessEvent event) {
         PrivateMessageSender.setBotName(Bot.Instance.getProtocol().getProfile().getName());
+        MultiThreadAnnouncementSender.setBotName(Bot.Instance.getProtocol().getProfile().getName());
         if (config.isEnabled() && !isRunning) {
             scheduler.start();
         }
@@ -163,10 +168,15 @@ public class XinPga implements Plugin, Listener {
         List<String> output = new ArrayList<>();
 
         try {
-            // 暂停私聊宣传任务
-            if (isRunning && getConfig().getSendMode() == SendMode.PRIVATE) {
+            // 暂停公告任务
+            if (isRunning && getConfig().getSendMode() == SendMode.PUBLIC) {
                 isSuspended = true;
                 output.add("信息：任务已暂停，开始执行远程命令");
+                
+                // 如果多线程发送也在运行，也暂停它
+                if (MultiThreadAnnouncementSender.isMultiThreadRunning()) {
+                    output.add("信息：多线程发送功能也已暂停");
+                }
             }
 
             // 执行命令
@@ -183,8 +193,8 @@ public class XinPga implements Plugin, Listener {
             output.add("错误：执行命令时发生异常: " + e.getMessage());
             outError("执行远程命令时发生错误: " + e.getMessage());
         } finally {
-            // 恢复私聊宣传任务
-            if (isSuspended && getConfig().getSendMode() == SendMode.PRIVATE) {
+            // 恢复公告任务
+            if (isSuspended && getConfig().getSendMode() == SendMode.PUBLIC) {
                 isSuspended = false;
                 output.add("信息：任务恢复，远程命令执行完成");
             }
@@ -240,6 +250,9 @@ public class XinPga implements Plugin, Listener {
         }
         // 强制设置运行状态为false
         isRunning = false;
+        
+        // 同时停止多线程发送功能
+        MultiThreadAnnouncementSender.stopMultiThreadSending();
     }
     public void cmdStart() {
         if (commandService != null) {
@@ -255,6 +268,9 @@ public class XinPga implements Plugin, Listener {
         } else {
             getLogger().error("CommandService 未初始化");
         }
+        
+        // 同时停止多线程发送功能
+        MultiThreadAnnouncementSender.stopMultiThreadSending();
     }
 
     public void cmdString(int index, String text) {
@@ -431,5 +447,104 @@ public class XinPga implements Plugin, Listener {
 
     public enum SendMode {
         PUBLIC, PRIVATE
+    }
+    
+    // 多线程发送功能相关的命令方法
+    public void cmdStartMultiThread() {
+        if (getConfig().getSendMode() != SendMode.PRIVATE) {
+            outWarn("多线程发送功能仅在私聊发送模式下可用");
+            return;
+        }
+        
+        if (!isRunning) {
+            outWarn("请先启动主发送功能，才能启动多线程发送功能");
+            return;
+        }
+        
+        MultiThreadAnnouncementSender.startMultiThreadSending();
+    }
+
+    public void cmdStopMultiThread() {
+        MultiThreadAnnouncementSender.stopMultiThreadSending();
+    }
+    
+    // 数字替换功能相关的命令方法
+    public void cmdSetNumberReplacementEnabled(boolean enabled) {
+        getConfig().setNumberReplacementEnabled(enabled);
+        try {
+            getConfig().saveConfig();
+            outLog("数字替换功能已" + (enabled ? "启用" : "禁用"));
+        } catch (Exception e) {
+            outError("保存配置文件失败: " + e.getMessage());
+        }
+    }
+
+    public void cmdSetMinConsecutiveNumbers(int minConsecutiveNumbers) {
+        if (minConsecutiveNumbers <= 0) {
+            outWarn("最少连续数字数量必须大于0");
+            return;
+        }
+        getConfig().setMinConsecutiveNumbers(minConsecutiveNumbers);
+        try {
+            getConfig().saveConfig();
+            outLog("最少连续数字数量已设置为: " + minConsecutiveNumbers);
+        } catch (Exception e) {
+            outError("保存配置文件失败: " + e.getMessage());
+        }
+    }
+    
+    // 多线程发送间隔相关的命令方法
+    public void cmdMultiThreadInterval(int seconds) {
+        getConfig().setMultiThreadInterval(seconds);
+        try {
+            getConfig().saveConfig();
+            outLog("多线程发送间隔已设置为: " + seconds + " 秒");
+        } catch (Exception e) {
+            outError("保存配置文件失败: " + e.getMessage());
+        }
+    }
+    
+    // 同步更新多线程消息相关的命令方法
+    public void cmdSetSyncMultiThreadMessages(boolean enabled) {
+        getConfig().setSyncMultiThreadMessages(enabled);
+        try {
+            getConfig().saveConfig();
+            outLog("同步更新多线程消息功能已" + (enabled ? "启用" : "禁用"));
+        } catch (Exception e) {
+            outError("保存配置文件失败: " + e.getMessage());
+        }
+    }
+    
+    // 多线程消息相关的命令方法
+    public void cmdMultiThreadString(int index, String text) {
+        if (commandService != null) {
+            commandService.handleMultiThreadString(index, text);
+        } else {
+            getLogger().error("CommandService 未初始化");
+        }
+    }
+
+    public void cmdMultiThreadAddMessage(String message) {
+        if (commandService != null) {
+            commandService.handleMultiThreadAddMessage(message);
+        } else {
+            getLogger().error("CommandService 未初始化");
+        }
+    }
+
+    public void cmdMultiThreadRemoveMessage(String message) {
+        if (commandService != null) {
+            commandService.handleMultiThreadRemoveMessage(message);
+        } else {
+            getLogger().error("CommandService 未初始化");
+        }
+    }
+
+    public void cmdMultiThreadListMessages() {
+        if (commandService != null) {
+            commandService.handleMultiThreadListMessages();
+        } else {
+            getLogger().error("CommandService 未初始化");
+        }
     }
 }

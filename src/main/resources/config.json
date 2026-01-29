@@ -1,22 +1,57 @@
 {
   "enabled": true,
+  // 是否启用插件功能
   "intervalSeconds": 40,
+  // 公告发送间隔（秒）
   "messages": [
     "你好啊",
-    "本宣传工具基于xinbot框架制作，已在GitHub开源。xinbot带给您类Bukkit的插件开发体验（github.com/2698269088/XinPga）"
+    "本宣传工具基于xinbot框架制作，已在GitHub开源。",
+    "xinbot带给您类Bukkit的插件开发体验（github.com/2698269088/XinPga）"
   ],
+  // 主消息列表
   "appendRandomString": true,
+  // 是否在消息末尾添加随机字符串
   "randomLength": 5,
+  // 随机字符串的长度
   "sendMode": "PRIVATE",
+  // 发送模式：PUBLIC（公共聊天）或 PRIVATE（私聊）
   "privateMessageInterval": 10,
+  // 私聊发送间隔（秒）
   "messageInterval": 4,
+  // 消息之间的发送间隔（秒）
   "privateMessageBlacklist": [
     "e_2"
   ],
+  // 私聊黑名单玩家列表
   "administrators": [],
+  // 管理员列表
   "remoteCommandEnabled": true,
+  // 是否启用远程命令功能
   "remoteCommandAdminEnabled": false,
+  // 是否启用远程命令的admin功能
   "randomSendingEnabled": false,
+  // 是否启用随机发送模式（每次只发送一条随机消息）
   "greetingEnabled": false,
-  "greetingFormat": "hi，#name#，"
+  // 是否启用问候语功能
+  "greetingFormat": "hi，#name#，",
+  // 问候语格式，其中#name#会被替换为玩家名
+  "multiThreadEnabled": false,
+  // 是否启用多线程发送功能
+  "multiThreadMessages": [
+    "多线程消息1",
+    "多线程消息2"
+  ],
+  // 多线程发送的独立消息列表
+  "multiThreadDuration": 30,
+  // 多线程发送的持续时间（秒）
+  "multiThreadInterval": 2,
+  // 多线程发送的消息间隔（秒）
+  "multiThreadCheckInterval": 5,
+  // 多线程发送检查的间隔（秒）
+  "numberReplacementEnabled": false,
+  // 是否启用数字替换功能（将连续数字替换为数学粗体字体）
+  "minConsecutiveNumbers": 5,
+  // 最少连续数字数量，达到此数量才进行数字替换
+  "syncMultiThreadMessages": false
+  // 是否同步更新主消息列表和多线程消息列表
 }

@@ -50,6 +50,14 @@ public class XpaCommandExecutor extends TabExecutor {
                     XinPga.INSTANCE.cmdStop();
                     output.add("任务：已停止定时发送");
                 }
+                case "multistart" -> {
+                    XinPga.INSTANCE.cmdStartMultiThread();
+                    output.add("多线程发送：已启动多线程公告发送");
+                }
+                case "multistop" -> {
+                    XinPga.INSTANCE.cmdStopMultiThread();
+                    output.add("多线程发送：已停止多线程公告发送");
+                }
                 case "string" -> handleStringCommandWithOutput(args, output);
                 case "addmessage" -> handleAddMessageCommandWithOutput(args, output);
                 case "removemessage" -> handleRemoveMessageCommandWithOutput(args, output);
@@ -73,6 +81,14 @@ public class XpaCommandExecutor extends TabExecutor {
                 case "forcestop" -> handleForceStopCommandWithOutput(args, output);
                 case "randomsending" -> handleRandomSendingCommandWithOutput(args, output);
                 case "greeting" -> handleGreetingCommandWithOutput(args, output);
+                case "numberreplacement" -> handleNumberReplacementCommandWithOutput(args, output);
+                case "minconsecutive" -> handleMinConsecutiveCommandWithOutput(args, output);
+                case "multistring" -> handleMultiThreadStringCommandWithOutput(args, output);
+                case "multiaddmessage" -> handleMultiThreadAddMessageCommandWithOutput(args, output);
+                case "multiremovemessage" -> handleMultiThreadRemoveMessageCommandWithOutput(args, output);
+                case "multilistmessages" -> handleMultiThreadListMessagesCommandWithOutput(output);
+                case "syncmultithread" -> handleSyncMultiThreadCommandWithOutput(args, output);
+                case "multithreadinterval" -> handleMultiThreadIntervalCommandWithOutput(args, output);
                 default -> output.add("未知子命令: " + args[0] + "！请使用 /xpa help 查看帮助");
             }
         } catch (Exception e) {
@@ -81,6 +97,133 @@ public class XpaCommandExecutor extends TabExecutor {
         }
 
         return output;
+    }
+
+    // 处理 numberReplacement 命令
+    private void handleNumberReplacementCommandWithOutput(String[] args, List<String> output) {
+        if (args.length < 2) {
+            output.add("用法: /xpa numberreplacement <on|off>");
+            return;
+        }
+        
+        switch (args[1].toLowerCase()) {
+            case "on":
+                XinPga.INSTANCE.cmdSetNumberReplacementEnabled(true);
+                output.add("信息：已启用数字替换功能");
+                break;
+            case "off":
+                XinPga.INSTANCE.cmdSetNumberReplacementEnabled(false);
+                output.add("信息：已禁用数字替换功能");
+                break;
+            default:
+                output.add("错误：参数必须是 on 或 off");
+                break;
+        }
+    }
+
+    // 处理 minConsecutive 命令
+    private void handleMinConsecutiveCommandWithOutput(String[] args, List<String> output) {
+        if (args.length < 2) {
+            output.add("用法: /xpa minconsecutive <数字>");
+            return;
+        }
+        
+        try {
+            int minConsecutive = Integer.parseInt(args[1]);
+            if (minConsecutive <= 0) {
+                output.add("错误：最少连续数字数量必须大于0！");
+                return;
+            }
+            XinPga.INSTANCE.cmdSetMinConsecutiveNumbers(minConsecutive);
+            output.add("信息：已设置最少连续数字数量为: " + minConsecutive);
+        } catch (NumberFormatException e) {
+            output.add("错误：参数必须是整数！");
+        }
+    }
+    
+    // 处理 multistring 命令
+    private void handleMultiThreadStringCommandWithOutput(String[] args, List<String> output) {
+        if (args.length < 3) {
+            output.add("用法: /xpa multistring <编号> <新文本>");
+        } else {
+            try {
+                int index = Integer.parseInt(args[1]) - 1;
+                String text = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+                XinPga.INSTANCE.cmdMultiThreadString(index, text);
+                output.add("信息：第 " + args[1] + " 条多线程消息已改为: " + text);
+            } catch (NumberFormatException e) {
+                output.add("错误：编号必须是整数！");
+            } catch (IndexOutOfBoundsException e) {
+                output.add("错误：编号超出范围！");
+            }
+        }
+    }
+
+    // 处理 multiaddmessage 命令
+    private void handleMultiThreadAddMessageCommandWithOutput(String[] args, List<String> output) {
+        if (args.length < 2) {
+            output.add("用法: /xpa multiaddmessage <消息内容>");
+        } else {
+            String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+            XinPga.INSTANCE.cmdMultiThreadAddMessage(message);
+            output.add("信息：已添加多线程消息: " + message);
+        }
+    }
+
+    // 处理 multiremovemessage 命令
+    private void handleMultiThreadRemoveMessageCommandWithOutput(String[] args, List<String> output) {
+        if (args.length < 2) {
+            output.add("用法: /xpa multiremovemessage <消息内容>");
+        } else {
+            String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+            boolean removed = XinPga.INSTANCE.getConfig().getMultiThreadMessages().remove(message);
+            if (removed) {
+                try {
+                    XinPga.INSTANCE.getConfig().saveConfig();
+                    output.add("信息：已移除多线程消息: " + message);
+                } catch (IOException e) {
+                    output.add("错误：保存配置文件失败: " + e.getMessage());
+                    log.error("保存配置文件时发生错误", e);
+                }
+            } else {
+                output.add("错误：未找到多线程消息: " + message);
+            }
+        }
+    }
+
+    // 处理 multilistmessages 命令
+    private void handleMultiThreadListMessagesCommandWithOutput(List<String> output) {
+        List<String> messages = XinPga.INSTANCE.getConfig().getMultiThreadMessages();
+        if (messages.isEmpty()) {
+            output.add("信息：多线程消息列表为空");
+        } else {
+            output.add("信息：多线程消息列表 (" + messages.size() + " 条):);");
+            for (int i = 0; i < messages.size(); i++) {
+                output.add((i + 1) + ". " + messages.get(i));
+            }
+        }
+    }
+    
+    // 处理 syncmultithread 命令
+    private void handleSyncMultiThreadCommandWithOutput(String[] args, List<String> output) {
+        if (args.length < 2) {
+            output.add("用法: /xpa syncmultithread <on|off>");
+            return;
+        }
+        
+        switch (args[1].toLowerCase()) {
+            case "on":
+                XinPga.INSTANCE.cmdSetSyncMultiThreadMessages(true);
+                output.add("信息：已启用同步更新多线程消息功能");
+                break;
+            case "off":
+                XinPga.INSTANCE.cmdSetSyncMultiThreadMessages(false);
+                output.add("信息：已禁用同步更新多线程消息功能");
+                break;
+            default:
+                output.add("错误：参数必须是 on 或 off");
+                break;
+        }
     }
 
     // 处理 greeting 命令
@@ -196,11 +339,22 @@ public class XpaCommandExecutor extends TabExecutor {
     private void handleListMessagesCommandWithOutput(List<String> output) {
         List<String> messages = XinPga.INSTANCE.getConfig().getMessages();
         if (messages.isEmpty()) {
-            output.add("信息：消息列表为空");
+            output.add("信息：主消息列表为空");
         } else {
-            output.add("信息：消息列表 (" + messages.size() + " 条):");
+            output.add("信息：主消息列表 (" + messages.size() + " 条):;");
             for (int i = 0; i < messages.size(); i++) {
                 output.add((i + 1) + ". " + messages.get(i));
+            }
+        }
+        
+        // 显示多线程消息列表
+        List<String> multiThreadMessages = XinPga.INSTANCE.getConfig().getMultiThreadMessages();
+        if (multiThreadMessages.isEmpty()) {
+            output.add("信息：多线程消息列表为空");
+        } else {
+            output.add("信息：多线程消息列表 (" + multiThreadMessages.size() + " 条):;");
+            for (int i = 0; i < multiThreadMessages.size(); i++) {
+                output.add((i + 1) + ". " + multiThreadMessages.get(i));
             }
         }
     }
@@ -271,6 +425,25 @@ public class XpaCommandExecutor extends TabExecutor {
                 }
                 XinPga.INSTANCE.cmdMessageInterval(sec);
                 output.add("信息：消息发送间隔已改为: " + sec + " 秒");
+            } catch (NumberFormatException e) {
+                output.add("错误：时间必须是整数秒！");
+            }
+        }
+    }
+    
+    // 处理 multithreadinterval 命令
+    private void handleMultiThreadIntervalCommandWithOutput(String[] args, List<String> output) {
+        if (args.length < 2) {
+            output.add("用法: /xpa multithreadinterval <秒>");
+        } else {
+            try {
+                int sec = Integer.parseInt(args[1]);
+                if (sec <= 0) {
+                    output.add("错误：时间必须大于0秒！");
+                    return;
+                }
+                XinPga.INSTANCE.cmdMultiThreadInterval(sec);
+                output.add("信息：多线程发送间隔已改为: " + sec + " 秒");
             } catch (NumberFormatException e) {
                 output.add("错误：时间必须是整数秒！");
             }
@@ -367,6 +540,8 @@ public class XpaCommandExecutor extends TabExecutor {
         output.add("=== XinPga 插件远程命令帮助 ===");
         output.add("#command xpa start - 启动定时发送");
         output.add("#command xpa stop - 停止定时发送");
+        output.add("#command xpa multistart - 启动多线程公告发送（仅在公告模式下可用）");
+        output.add("#command xpa multistop - 停止多线程公告发送");
         output.add("#command xpa string <编号> <文本> - 设置发送内容");
         output.add("#command xpa addmessage <消息> - 添加消息到发送列表");
         output.add("#command xpa removemessage <消息> - 从发送列表移除消息");
@@ -376,6 +551,13 @@ public class XpaCommandExecutor extends TabExecutor {
         output.add("#command xpa privateinterval <秒> - 设置私聊发送间隔");
         output.add("#command xpa messageinterval <秒> - 设置消息间发送间隔");
         output.add("#command xpa randomSending <on|off> - 设置随机发送模式");
+        output.add("#command xpa numberreplacement <on|off> - 设置数字替换功能");
+        output.add("#command xpa minconsecutive <数字> - 设置最少连续数字数量");
+        output.add("#command xpa multistring <编号> <文本> - 设置多线程发送内容");
+        output.add("#command xpa multiaddmessage <消息> - 添加消息到多线程发送列表");
+        output.add("#command xpa multiremovemessage <消息> - 从多线程发送列表移除消息");
+        output.add("#command xpa multilistmessages - 列出所有多线程发送消息");
+        output.add("#command xpa syncmultithread <on|off> - 控制是否同步更新多线程消息列表");
         output.add("#command xpa greeting <enable|disable> - 控制问候语开关");
         output.add("#command xpa greeting format [格式] - 修改问候语格式，以#name#做玩家占位符");
         output.add("#command xpa updateplayerlist - 手动更新在线玩家列表");

@@ -43,6 +43,16 @@ public class CommandService {
         if (index >= 0 && index < messages.size()) {
             messages.set(index, text);
             config.setMessages(messages);
+            
+            // 如果启用了同步更新多线程消息列表，则同步更新
+            if (config.isSyncMultiThreadMessages()) {
+                List<String> multiThreadMessages = config.getMultiThreadMessages();
+                if (index < multiThreadMessages.size()) {
+                    multiThreadMessages.set(index, text);
+                    config.setMultiThreadMessages(multiThreadMessages);
+                }
+            }
+            
             saveConfig();
             xinPga.outLog("信息：第 " + (index + 1) + " 条发送内容已改为: " + text);
         } else {
@@ -52,6 +62,12 @@ public class CommandService {
 
     public void handleAddMessage(String message) {
         config.addMessage(message);
+        
+        // 如果启用了同步更新多线程消息列表，则同步添加到多线程消息列表
+        if (config.isSyncMultiThreadMessages()) {
+            config.addMultiThreadMessage(message);
+        }
+        
         saveConfig();
         xinPga.outLog("信息：已添加消息: " + message);
     }
@@ -65,11 +81,22 @@ public class CommandService {
     public void handleListMessages() {
         List<String> messages = config.getMessages();
         if (messages.isEmpty()) {
-            xinPga.outLog("信息：消息列表为空");
+            xinPga.outLog("信息：主消息列表为空");
         } else {
-            xinPga.outLog("信息：消息列表:");
+            xinPga.outLog("信息：主消息列表:");
             for (int i = 0; i < messages.size(); i++) {
                 xinPga.outLog((i + 1) + ". " + messages.get(i));
+            }
+        }
+        
+        // 总是显示多线程消息列表，不管同步设置如何
+        List<String> multiThreadMessages = config.getMultiThreadMessages();
+        if (multiThreadMessages.isEmpty()) {
+            xinPga.outLog("信息：多线程消息列表为空");
+        } else {
+            xinPga.outLog("信息：多线程消息列表:");
+            for (int i = 0; i < multiThreadMessages.size(); i++) {
+                xinPga.outLog((i + 1) + ". " + multiThreadMessages.get(i));
             }
         }
     }
@@ -207,7 +234,60 @@ public class CommandService {
         saveConfig();
         xinPga.outLog("信息：问候语格式已设置为: " + format);
     }
+    
+    public void handleMultiThreadInterval(int seconds) {
+        config.setMultiThreadInterval(seconds);
+        saveConfig();
+        xinPga.outLog("信息：多线程发送间隔已设置为: " + seconds + " 秒");
+    }
+    
+    // 多线程消息处理方法
+    public void handleMultiThreadString(int index, String text) {
+        List<String> messages = config.getMultiThreadMessages();
+        if (index >= 0 && index < messages.size()) {
+            messages.set(index, text);
+            config.setMultiThreadMessages(messages);
+            saveConfig();
+            xinPga.outLog("信息：第 " + (index + 1) + " 条多线程消息已改为: " + text);
+        } else {
+            xinPga.outError("错误：编号超出范围，当前共有 " + messages.size() + " 条多线程消息");
+        }
+    }
 
+    public void handleMultiThreadAddMessage(String message) {
+        config.addMultiThreadMessage(message);
+        saveConfig();
+        xinPga.outLog("信息：已添加多线程消息: " + message);
+    }
+
+    public void handleMultiThreadRemoveMessage(String message) {
+        boolean removed = config.getMultiThreadMessages().remove(message);
+        if (removed) {
+            saveConfig();
+            xinPga.outLog("信息：已移除多线程消息: " + message);
+        } else {
+            xinPga.outLog("错误：未找到多线程消息: " + message);
+        }
+    }
+
+    public void handleMultiThreadListMessages() {
+        List<String> messages = config.getMultiThreadMessages();
+        if (messages.isEmpty()) {
+            xinPga.outLog("信息：多线程消息列表为空");
+        } else {
+            xinPga.outLog("信息：多线程消息列表:");
+            for (int i = 0; i < messages.size(); i++) {
+                xinPga.outLog((i + 1) + ". " + messages.get(i));
+            }
+        }
+    }
+
+    public void handleSetSyncMultiThreadMessages(boolean enabled) {
+        config.setSyncMultiThreadMessages(enabled);
+        saveConfig();
+        xinPga.outLog("信息：同步更新多线程消息功能已" + (enabled ? "启用" : "禁用"));
+    }
+    
     private void saveConfig() {
         try {
             config.saveConfig();

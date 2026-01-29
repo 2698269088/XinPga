@@ -26,10 +26,27 @@ public class XinPgaConfig {
     private boolean randomSendingEnabled = false; // 是否启用随机发送功能
     private boolean greetingEnabled = false; // 是否启用问候语功能
     private String greetingFormat = "hi，你好#name#，"; // 问候语格式
+    
+    // 多线程发送功能的配置项
+    private boolean multiThreadEnabled = false; // 是否启用多线程发送功能
+    private List<String> multiThreadMessages = new ArrayList<>(); // 多线程发送的独立消息列表
+    private int multiThreadDuration = 30; // 多线程发送的持续时间（秒）
+    private int multiThreadInterval = 2; // 多线程发送的消息间隔（秒）
+    private int multiThreadCheckInterval = 5; // 多线程发送检查的间隔（秒）
+    
+    // 数字替换功能的配置项
+    private boolean numberReplacementEnabled = false; // 是否启用数字替换功能
+    private int minConsecutiveNumbers = 5; // 最少连续数字数量，达到此数量才进行替换
+    
+    // 同步更新多线程消息的配置项
+    private boolean syncMultiThreadMessages = false; // 是否同步更新多线程消息列表
 
     public XinPgaConfig(Path configPath) {
         this.configPath = configPath;
         this.messages.add("你好啊");
+        // 初始化多线程消息列表
+        this.multiThreadMessages.add("多线程消息1");
+        this.multiThreadMessages.add("多线程消息2");
     }
 
     public void loadConfig() throws IOException {
@@ -92,6 +109,39 @@ public class XinPgaConfig {
         if (root.has("greetingFormat")) {
             greetingFormat = root.get("greetingFormat").getAsString();
         }
+        
+        // 加载多线程发送功能配置
+        if (root.has("multiThreadEnabled")) {
+            multiThreadEnabled = root.get("multiThreadEnabled").getAsBoolean();
+        }
+        
+        if (root.has("multiThreadMessages") && root.get("multiThreadMessages").isJsonArray()) {
+            multiThreadMessages = new ArrayList<>();
+            for (JsonElement element : root.getAsJsonArray("multiThreadMessages")) {
+                multiThreadMessages.add(element.getAsString());
+            }
+        }
+        
+        if (root.has("multiThreadDuration")) {
+            multiThreadDuration = root.get("multiThreadDuration").getAsInt();
+        }
+        
+        if (root.has("multiThreadInterval")) {
+            multiThreadInterval = root.get("multiThreadInterval").getAsInt();
+        }
+        
+        if (root.has("multiThreadCheckInterval")) {
+            multiThreadCheckInterval = root.get("multiThreadCheckInterval").getAsInt();
+        }
+        
+        // 加载数字替换功能配置
+        if (root.has("numberReplacementEnabled")) {
+            numberReplacementEnabled = root.get("numberReplacementEnabled").getAsBoolean();
+        }
+        
+        if (root.has("minConsecutiveNumbers")) {
+            minConsecutiveNumbers = root.get("minConsecutiveNumbers").getAsInt();
+        }
     }
 
     public void saveConfig() throws IOException {
@@ -126,6 +176,24 @@ public class XinPgaConfig {
         // 保存问候语设置
         root.addProperty("greetingEnabled", greetingEnabled);
         root.addProperty("greetingFormat", greetingFormat);
+        
+        // 保存多线程发送功能配置
+        root.addProperty("multiThreadEnabled", multiThreadEnabled);
+        
+        JsonArray multiThreadMessagesArray = new JsonArray();
+        multiThreadMessages.forEach(m -> multiThreadMessagesArray.add(m));
+        root.add("multiThreadMessages", multiThreadMessagesArray);
+        
+        root.addProperty("multiThreadDuration", multiThreadDuration);
+        root.addProperty("multiThreadInterval", multiThreadInterval);
+        root.addProperty("multiThreadCheckInterval", multiThreadCheckInterval);
+        
+        // 保存数字替换功能配置
+        root.addProperty("numberReplacementEnabled", numberReplacementEnabled);
+        root.addProperty("minConsecutiveNumbers", minConsecutiveNumbers);
+        
+        // 保存同步更新多线程消息配置
+        root.addProperty("syncMultiThreadMessages", syncMultiThreadMessages);
 
         Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(root));
     }
@@ -171,6 +239,22 @@ public class XinPgaConfig {
         // 问候语功能配置项
         def.addProperty("greetingEnabled", false);
         def.addProperty("greetingFormat", "hi，#name#，");
+        
+        // 多线程发送功能配置项
+        def.addProperty("multiThreadEnabled", false);
+        
+        JsonArray defaultMultiThreadMessages = new JsonArray();
+        defaultMultiThreadMessages.add("多线程消息1");
+        defaultMultiThreadMessages.add("多线程消息2");
+        def.add("multiThreadMessages", defaultMultiThreadMessages);
+        
+        def.addProperty("multiThreadDuration", 30);
+        def.addProperty("multiThreadInterval", 2);
+        def.addProperty("multiThreadCheckInterval", 5);
+        
+        // 数字替换功能配置项
+        def.addProperty("numberReplacementEnabled", false);
+        def.addProperty("minConsecutiveNumbers", 5);
 
         Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(def));
     }
@@ -334,5 +418,82 @@ public class XinPgaConfig {
 
     public void setGreetingFormat(String greetingFormat) {
         this.greetingFormat = greetingFormat;
+    }
+    
+    // 多线程发送功能相关方法
+    public boolean isMultiThreadEnabled() {
+        return multiThreadEnabled;
+    }
+
+    public void setMultiThreadEnabled(boolean multiThreadEnabled) {
+        this.multiThreadEnabled = multiThreadEnabled;
+    }
+
+    public List<String> getMultiThreadMessages() {
+        return multiThreadMessages;
+    }
+
+    public void setMultiThreadMessages(List<String> multiThreadMessages) {
+        this.multiThreadMessages = new ArrayList<>(multiThreadMessages);
+    }
+
+    public void addMultiThreadMessage(String message) {
+        if (!multiThreadMessages.contains(message)) {
+            multiThreadMessages.add(message);
+        }
+    }
+
+    public void removeMultiThreadMessage(String message) {
+        multiThreadMessages.remove(message);
+    }
+
+    public int getMultiThreadDuration() {
+        return multiThreadDuration;
+    }
+
+    public void setMultiThreadDuration(int multiThreadDuration) {
+        this.multiThreadDuration = multiThreadDuration;
+    }
+
+    public int getMultiThreadInterval() {
+        return multiThreadInterval;
+    }
+
+    public void setMultiThreadInterval(int multiThreadInterval) {
+        this.multiThreadInterval = multiThreadInterval;
+    }
+
+    public int getMultiThreadCheckInterval() {
+        return multiThreadCheckInterval;
+    }
+
+    public void setMultiThreadCheckInterval(int multiThreadCheckInterval) {
+        this.multiThreadCheckInterval = multiThreadCheckInterval;
+    }
+    
+    // 数字替换功能相关方法
+    public boolean isNumberReplacementEnabled() {
+        return numberReplacementEnabled;
+    }
+
+    public void setNumberReplacementEnabled(boolean numberReplacementEnabled) {
+        this.numberReplacementEnabled = numberReplacementEnabled;
+    }
+
+    public int getMinConsecutiveNumbers() {
+        return minConsecutiveNumbers;
+    }
+
+    public void setMinConsecutiveNumbers(int minConsecutiveNumbers) {
+        this.minConsecutiveNumbers = minConsecutiveNumbers;
+    }
+    
+    // 同步更新多线程消息相关方法
+    public boolean isSyncMultiThreadMessages() {
+        return syncMultiThreadMessages;
+    }
+
+    public void setSyncMultiThreadMessages(boolean syncMultiThreadMessages) {
+        this.syncMultiThreadMessages = syncMultiThreadMessages;
     }
 }
