@@ -16,7 +16,7 @@ import top.mcocet.xinpga.config.XinPgaConfig;
 
 /**
  * 多线程公告消息发送器
- * 只在主发送模式为公告发送模式时启用，拥有独立的线程控制和发送信息
+ * 只在主发送模式为私聊发送模式时启用，拥有独立的线程控制和发送信息
  */
 public class MultiThreadAnnouncementSender {
     private static final Logger log = LoggerFactory.getLogger(MultiThreadAnnouncementSender.class);
@@ -62,8 +62,10 @@ public class MultiThreadAnnouncementSender {
             try {
                 log.info("[多线程发送] 多线程公告发送功能已启动");
                 
-                while (isMultiThreadRunning && xinPga.isRunning) {
-                    if (xinPga.isSuspended) {
+                XinPga xinPgaLocal = XinPga.INSTANCE;
+                
+                while (isMultiThreadRunning && xinPgaLocal.isRunning) {
+                    if (xinPgaLocal.isSuspended) {
                         log.info("[多线程发送] 任务被暂停，等待恢复...");
                         Thread.sleep(1000); // 暂停期间每秒检查一次
                         continue;
@@ -169,80 +171,72 @@ public class MultiThreadAnnouncementSender {
      * 发送多线程公告消息
      */
     private static void sendMultiThreadAnnouncements(List<String> messages, int duration, int interval) {
-        if (XinPga.INSTANCE.isSuspended) {
+        XinPga xinPga = XinPga.INSTANCE;
+        
+        if (xinPga.isSuspended) {
             log.info("[多线程发送] 任务被远程命令暂停，跳过发送公告");
             return;
         }
 
-        Thread sendingThread = new Thread(() -> {
-            try {
-                // 将当前线程添加到活动线程集合中
-                activeSendingThreads.add(Thread.currentThread());
+        try {
+            long startTime = System.currentTimeMillis();
+            long durationMillis = duration * 1000L;
+            
+            int messageIndex = 0;
+            while (isMultiThreadRunning && 
+                   xinPga.isRunning && 
+                   !xinPga.isSuspended && 
+                   (System.currentTimeMillis() - startTime) < durationMillis) {
                 
-                XinPga xinPga = XinPga.INSTANCE;
-                long startTime = System.currentTimeMillis();
-                long durationMillis = duration * 1000L;
+                String message = messages.get(messageIndex % messages.size()); // 循环使用消息
                 
-                int messageIndex = 0;
-                while (isMultiThreadRunning && 
-                       xinPga.isRunning && 
-                       !xinPga.isSuspended && 
-                       (System.currentTimeMillis() - startTime) < durationMillis) {
-                    
-                    String message = messages.get(messageIndex % messages.size()); // 循环使用消息
-                    
-                    // 如果启用了数字替换功能，则对消息进行数字替换
-                    if (xinPga.getConfig().isNumberReplacementEnabled()) {
-                        message = replaceNumbersWithMathFont(message, xinPga.getConfig().getMinConsecutiveNumbers());
-                    }
-                    
-                    // 根据原始配置决定是否添加随机字符串
-                    if (xinPga.getConfig().isAppendRandom()) {
-                        message += " " + xinPga.randomString(xinPga.getConfig().getRandomLength());
-                    }
-                    
-                    try {
-                        Bot.Instance.sendChatMessage(message);
-                        log.debug("[多线程发送] 已发送公告: {}", message);
-                    } catch (Exception e) {
-                        log.error("[多线程发送] 发送公告失败: {}", e.getMessage());
-                    }
-
-                    messageIndex++;
-                    
-                    // 等待指定的时间间隔
-                    long sleepTime = interval * 1000L;
-                    long elapsed = System.currentTimeMillis() - startTime;
-                    if (elapsed >= durationMillis) {
-                        break; // 超出持续时间，退出循环
-                    }
-                    
-                    long remainingSleep = Math.min(sleepTime, durationMillis - elapsed);
-                    long endTime = System.currentTimeMillis() + remainingSleep;
-                    
-                    while (isMultiThreadRunning && 
-                           xinPga.isRunning && 
-                           System.currentTimeMillis() < endTime) {
-                        try {
-                            Thread.sleep(Math.min(50, endTime - System.currentTimeMillis()));
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            log.info("[多线程发送] 发送公告被中断");
-                            return;
-                        }
-                    }
+                // 如果启用了数字替换功能，则对消息进行数字替换
+                if (xinPga.getConfig().isNumberReplacementEnabled()) {
+                    message = replaceNumbersWithMathFont(message, xinPga.getConfig().getMinConsecutiveNumbers());
                 }
                 
-                log.info("[多线程发送] 已完成发送多线程公告");
-            } catch (Exception e) {
-                log.error("[多线程发送] 发送多线程公告时发生错误: ", e);
-            } finally {
-                // 无论正常结束还是异常退出，都要从活动线程集合中移除
-                activeSendingThreads.remove(Thread.currentThread());
+                // 根据原始配置决定是否添加随机字符串
+                if (xinPga.getConfig().isAppendRandom()) {
+                    message += " " + xinPga.randomString(xinPga.getConfig().getRandomLength());
+                }
+                
+                try {
+                    Bot.Instance.sendChatMessage(message);
+                    log.debug("[多线程发送] 已发送公告: {}", message);
+                } catch (Exception e) {
+                    log.error("[多线程发送] 发送公告失败: {}", e.getMessage());
+                }
+
+                messageIndex++;
+                
+                // 等待指定的时间间隔
+                long sleepTime = interval * 1000L;
+                long elapsed = System.currentTimeMillis() - startTime;
+                if (elapsed >= durationMillis) {
+                    break; // 超出持续时间，退出循环
+                }
+                
+                long remainingSleep = Math.min(sleepTime, durationMillis - elapsed);
+                long endTime = System.currentTimeMillis() + remainingSleep;
+                
+                while (isMultiThreadRunning && 
+                       xinPga.isRunning && 
+                       System.currentTimeMillis() < endTime && 
+                       !xinPga.isSuspended) {
+                    try {
+                        Thread.sleep(Math.min(50, endTime - System.currentTimeMillis()));
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        log.info("[多线程发送] 发送公告被中断");
+                        return;
+                    }
+                }
             }
-        }, "MultiThreadAnnouncementSender-Announcement");
-        
-        sendingThread.start();
+            
+            log.info("[多线程发送] 已完成发送多线程公告");
+        } catch (Exception e) {
+            log.error("[多线程发送] 发送多线程公告时发生错误: ", e);
+        }
     }
     
     /**
