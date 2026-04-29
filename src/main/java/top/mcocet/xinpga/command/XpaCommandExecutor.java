@@ -45,19 +45,19 @@ public class XpaCommandExecutor extends TabExecutor {
             switch (args[0].toLowerCase()) {
                 case "start" -> {
                     XinPga.INSTANCE.cmdStart();
-                    output.add("任务：已启动定时发送");
+                    output.add(LangManager.get("xinpga.command.start.success"));
                 }
                 case "stop" -> {
                     XinPga.INSTANCE.cmdStop();
-                    output.add("任务：已停止定时发送");
+                    output.add(LangManager.get("xinpga.command.stop.success"));
                 }
                 case "multistart" -> {
                     XinPga.INSTANCE.cmdStartMultiThread();
-                    output.add("多线程发送：已启动多线程公告发送");
+                    output.add(LangManager.get("xinpga.multithread.start.success"));
                 }
                 case "multistop" -> {
                     XinPga.INSTANCE.cmdStopMultiThread();
-                    output.add("多线程发送：已停止多线程公告发送");
+                    output.add(LangManager.get("xinpga.multithread.stop.success"));
                 }
                 case "string" -> handleStringCommandWithOutput(args, output);
                 case "addmessage" -> handleAddMessageCommandWithOutput(args, output);
@@ -69,11 +69,11 @@ public class XpaCommandExecutor extends TabExecutor {
                 case "messageinterval" -> handleMessageIntervalCommandWithOutput(args, output);
                 case "reload" -> {
                     XinPga.INSTANCE.cmdReload();
-                    output.add("信息：配置文件已重载");
+                    output.add(LangManager.get("xinpga.command.reload.success"));
                 }
                 case "updateplayerlist" -> {
                     XinPga.INSTANCE.cmdUpdatePlayerList();
-                    output.add("信息：已手动更新在线玩家列表");
+                    output.add(LangManager.get("xinpga.command.playerlist.update.success"));
                 }
                 case "debug" -> handleDebugCommandWithOutput(output);
                 case "blacklist" -> handleBlacklistCommandWithOutput(args, output);
@@ -90,11 +90,11 @@ public class XpaCommandExecutor extends TabExecutor {
                 case "multilistmessages" -> handleMultiThreadListMessagesCommandWithOutput(output);
                 case "syncmultithread" -> handleSyncMultiThreadCommandWithOutput(args, output);
                 case "multithreadinterval" -> handleMultiThreadIntervalCommandWithOutput(args, output);
-                default -> output.add("未知子命令: " + args[0] + "！请使用 /xpa help 查看帮助");
+                default -> output.add(LangManager.get("xinpga.command.unknown", args[0]));
             }
         } catch (Exception e) {
-            output.add("错误：执行命令时发生异常: " + e.getMessage());
-            log.error("执行命令时发生错误", e);
+            output.add(LangManager.get("xinpga.command.error.generic", e.getMessage()));
+            log.error(LangManager.get("xinpga.command.error.execution"), e);
         }
 
         return output;
@@ -239,7 +239,7 @@ public class XpaCommandExecutor extends TabExecutor {
             case "format" -> {
                 if (args.length < 3) {
                     output.add(LangManager.get("xinpga.command.usage", "/xpa greeting format <格式>"));
-                    output.add("提示：格式中可以使用 #name# 来表示玩家名");
+                    output.add(LangManager.get("xinpga.command.greeting.format.hint"));
                     return;
                 }
                 
@@ -443,7 +443,7 @@ public class XpaCommandExecutor extends TabExecutor {
     // 处理 debug 命令
     private void handleDebugCommandWithOutput(List<String> output) {
         XinPga.INSTANCE.cmdDebugPlayerList();
-        output.add("信息：调试信息已输出到控制台，请查看服务器日志");
+        output.add(LangManager.get("xinpga.command.debug.output"));
     }
 
     // 处理 blacklist 命令

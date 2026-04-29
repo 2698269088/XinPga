@@ -3,6 +3,7 @@ package top.mcocet.xinpga.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.bbtt.mcbot.Bot;
+import xin.bbtt.mcbot.LangManager;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 
 import java.util.*;
@@ -54,7 +55,7 @@ public class PrivateMessageSender {
         cachedPlayerList = new ArrayList<>(nonBlacklistedPlayers);
         currentPlayerIndex.set(0);
 
-        log.info("已更新在线玩家列表: " + cachedPlayerList);
+        log.info(LangManager.get("xinpga.playerlist.updated.log", cachedPlayerList));
     }
 
     public static String getNextPlayer() {
@@ -96,12 +97,12 @@ public class PrivateMessageSender {
 
     public static void sendPrivateMessagesToPlayer(String playerName, List<String> messages, boolean appendRandom, int randomLength) {
         if (XinPga.INSTANCE.isSuspended) {
-            log.info("任务已被远程命令暂停，跳过发送给玩家: {}", playerName);
+            log.info(LangManager.get("xinpga.private.skipped.log", playerName));
             return;
         }
 
         if (!isPlayerOnline(playerName) || XinPga.INSTANCE.getConfig().isPlayerBlacklisted(playerName)) {
-            log.info("玩家 " + playerName + " 不在线或在黑名单中，跳过发送");
+            log.info(LangManager.get("xinpga.private.player.offline.log", playerName));
             return;
         }
 
@@ -126,7 +127,7 @@ public class PrivateMessageSender {
                 for (int i = 0; i < messages.size(); i++) {
                     // 更频繁地检查运行状态
                     if (!xinPga.isRunning) {
-                        log.info("检测到停止指令，中断发送给玩家: " + playerName);
+                        log.info(LangManager.get("xinpga.private.stop.detected.log", playerName));
                         return;
                     }
 
@@ -146,7 +147,7 @@ public class PrivateMessageSender {
                     try {
                         Bot.INSTANCE.sendCommand("msg " + playerName + " " + message);
                     } catch (Exception e) {
-                        log.error("发送私聊消息给玩家 {} 失败: {}", playerName, e.getMessage());
+                        log.error(LangManager.get("xinpga.private.send.error.log", playerName, e.getMessage()));
                     }
 
                     // 如果不是最后一条消息，则等待
@@ -160,21 +161,21 @@ public class PrivateMessageSender {
                                 Thread.sleep(Math.min(50, waitTime - (System.currentTimeMillis() - startTime)));
                             } catch (InterruptedException e) {
                                 Thread.currentThread().interrupt();
-                                log.info("发送给玩家 " + playerName + " 的消息被中断");
+                                log.info(LangManager.get("xinpga.private.interrupted.log", playerName));
                                 return;
                             }
                         }
 
                         // 再次检查运行状态
                         if (!xinPga.isRunning) {
-                            log.info("检测到停止指令，中断发送给玩家: " + playerName);
+                            log.info(LangManager.get("xinpga.private.stop.detected.log", playerName));
                             return;
                         }
                     }
                 }
-                log.info("已发送所有私聊消息给玩家：" + playerName);
+                log.info(LangManager.get("xinpga.private.completed.log", playerName));
             } catch (Exception e) {
-                log.error("发送私聊消息时发生错误: ", e);
+                log.error(LangManager.get("xinpga.private.send.error.full.log"), e);
             } finally {
                 // 无论正常结束还是异常退出，都要从活动线程集合中移除
                 activeSendingThreads.remove(Thread.currentThread());
@@ -192,7 +193,7 @@ public class PrivateMessageSender {
             for (Thread thread : activeSendingThreads) {
                 if (thread != null && thread.isAlive()) {
                     thread.interrupt();
-                    log.info("已中断发送线程: " + thread.getName());
+                    log.info(LangManager.get("xinpga.private.thread.interrupted.log", thread.getName()));
                 }
             }
             activeSendingThreads.clear();
@@ -200,7 +201,7 @@ public class PrivateMessageSender {
     }
 
     public static void printPlayerListStatus() {
-        log.info("当前玩家列表: " + cachedPlayerList);
-        log.info("当前索引: " + currentPlayerIndex.get());
+        log.info(LangManager.get("xinpga.playerlist.status.current_list", cachedPlayerList));
+        log.info(LangManager.get("xinpga.playerlist.status.current_index", currentPlayerIndex.get()));
     }
 }

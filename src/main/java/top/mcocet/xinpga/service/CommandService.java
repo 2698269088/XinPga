@@ -209,13 +209,13 @@ public class CommandService {
 
     public void handleDebugPlayerList() {
         PrivateMessageSender.printPlayerListStatus();
-        xinPga.outLog("当前Bot名称: " + xinPga.getBotName());
+        xinPga.outLog(LangManager.get("xinpga.command.bot.name", xinPga.getBotName()));
     }
 
     public void handleSetRandomSending(boolean enabled) {
         config.setRandomSendingEnabled(enabled);
         saveConfig();
-        xinPga.outLog(LangManager.get("xinpga.command.random.sending.updated", enabled ? "启用" : "禁用"));
+        xinPga.outLog(LangManager.get("xinpga.command.random.sending.updated", LangManager.get(enabled ? "xinpga.status.enabled" : "xinpga.status.disabled")));
         
         // 如果正在运行，重启调度器以应用更改
         if (xinPga.isRunning) {
@@ -227,7 +227,7 @@ public class CommandService {
     public void handleSetGreetingEnabled(boolean enabled) {
         config.setGreetingEnabled(enabled);
         saveConfig();
-        xinPga.outLog(LangManager.get("xinpga.command.greeting.updated", enabled ? "启用" : "禁用"));
+        xinPga.outLog(LangManager.get("xinpga.command.greeting.updated", LangManager.get(enabled ? "xinpga.status.enabled" : "xinpga.status.disabled")));
     }
 
     public void handleSetGreetingFormat(String format) {
@@ -286,14 +286,14 @@ public class CommandService {
     public void handleSetSyncMultiThreadMessages(boolean enabled) {
         config.setSyncMultiThreadMessages(enabled);
         saveConfig();
-        xinPga.outLog(LangManager.get("xinpga.command.sync.updated", enabled ? "启用" : "禁用"));
+        xinPga.outLog(LangManager.get("xinpga.command.sync.updated", LangManager.get(enabled ? "xinpga.status.enabled" : "xinpga.status.disabled")));
     }
     
     private void saveConfig() {
         try {
             config.saveConfig();
         } catch (Exception e) {
-            throw new RuntimeException("错误：无法保存配置", e);
+            throw new RuntimeException(LangManager.get("xinpga.config.save.error.generic"), e);
         }
     }
 }

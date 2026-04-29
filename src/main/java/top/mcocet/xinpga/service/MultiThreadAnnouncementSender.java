@@ -3,6 +3,7 @@ package top.mcocet.xinpga.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.bbtt.mcbot.Bot;
+import xin.bbtt.mcbot.LangManager;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 
 import java.util.*;
@@ -42,17 +43,17 @@ public class MultiThreadAnnouncementSender {
         
         // 检查前提条件：主发送模式必须是私聊模式且主发送功能已启动
         if (xinPga.getConfig().getSendMode() != XinPga.SendMode.PRIVATE) {
-            log.warn("[多线程发送] 主发送模式不是私聊模式，无法启动多线程发送功能");
+            log.warn(LangManager.get("xinpga.multithread.not.private.log"));
             return;
         }
         
         if (!xinPga.isRunning) {
-            log.warn("[多线程发送] 主发送功能未启动，无法启动多线程发送功能");
+            log.warn(LangManager.get("xinpga.multithread.not.started.log"));
             return;
         }
         
         if (isMultiThreadRunning) {
-            log.warn("[多线程发送] 多线程发送功能已经在运行中");
+            log.warn(LangManager.get("xinpga.multithread.already.running.log"));
             return;
         }
 
@@ -60,13 +61,13 @@ public class MultiThreadAnnouncementSender {
         
         mainThread = new Thread(() -> {
             try {
-                log.info("[多线程发送] 多线程公告发送功能已启动");
+                log.info(LangManager.get("xinpga.multithread.start.log"));
                 
                 XinPga xinPgaLocal = XinPga.INSTANCE;
                 
                 while (isMultiThreadRunning && xinPgaLocal.isRunning) {
                     if (xinPgaLocal.isSuspended) {
-                        log.info("[多线程发送] 任务被暂停，等待恢复...");
+                        log.info(LangManager.get("xinpga.multithread.paused.log"));
                         Thread.sleep(1000); // 暂停期间每秒检查一次
                         continue;
                     }
@@ -85,12 +86,12 @@ public class MultiThreadAnnouncementSender {
                     Thread.sleep(getMultiThreadCheckInterval() * 1000L);
                 }
                 
-                log.info("[多线程发送] 多线程公告发送功能已停止");
+                log.info(LangManager.get("xinpga.multithread.stop.log"));
             } catch (InterruptedException e) {
-                log.info("[多线程发送] 多线程发送功能被中断");
+                log.info(LangManager.get("xinpga.multithread.interrupted.log"));
                 Thread.currentThread().interrupt();
             } catch (Exception e) {
-                log.error("[多线程发送] 多线程发送过程中发生错误: ", e);
+                log.error(LangManager.get("xinpga.multithread.error.log"), e);
             } finally {
                 isMultiThreadRunning = false;
                 mainThread = null;
@@ -105,11 +106,11 @@ public class MultiThreadAnnouncementSender {
      */
     public static void stopMultiThreadSending() {
         if (!isMultiThreadRunning) {
-            log.info("[多线程发送] 多线程发送功能未运行");
+            log.info(LangManager.get("xinpga.multithread.not.running.log"));
             return;
         }
         
-        log.info("[多线程发送] 正在停止多线程公告发送功能...");
+        log.info(LangManager.get("xinpga.multithread.stopping.log"));
         isMultiThreadRunning = false;
         
         // 中断主线程
@@ -120,7 +121,7 @@ public class MultiThreadAnnouncementSender {
         // 中断所有活动的发送线程
         interruptAllSendingThreads();
         
-        log.info("[多线程发送] 多线程公告发送功能已停止");
+        log.info(LangManager.get("xinpga.multithread.stop.log"));
     }
 
     /**
@@ -174,7 +175,7 @@ public class MultiThreadAnnouncementSender {
         XinPga xinPga = XinPga.INSTANCE;
         
         if (xinPga.isSuspended) {
-            log.info("[多线程发送] 任务被远程命令暂停，跳过发送公告");
+            log.info(LangManager.get("xinpga.multithread.skipped.log"));
             return;
         }
 
@@ -202,9 +203,9 @@ public class MultiThreadAnnouncementSender {
                 
                 try {
                     Bot.INSTANCE.sendChatMessage(message);
-                    log.debug("[多线程发送] 已发送公告: {}", message);
+                    log.debug(LangManager.get("xinpga.multithread.send.success", message));
                 } catch (Exception e) {
-                    log.error("[多线程发送] 发送公告失败: {}", e.getMessage());
+                    log.error(LangManager.get("xinpga.multithread.send.error.log", e.getMessage()));
                 }
 
                 messageIndex++;
@@ -227,15 +228,15 @@ public class MultiThreadAnnouncementSender {
                         Thread.sleep(Math.min(50, endTime - System.currentTimeMillis()));
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        log.info("[多线程发送] 发送公告被中断");
+                        log.info(LangManager.get("xinpga.multithread.interrupted.sending.log"));
                         return;
                     }
                 }
             }
             
-            log.info("[多线程发送] 已完成发送多线程公告");
+            log.info(LangManager.get("xinpga.multithread.completed.log"));
         } catch (Exception e) {
-            log.error("[多线程发送] 发送多线程公告时发生错误: ", e);
+            log.error(LangManager.get("xinpga.multithread.error.log"), e);
         }
     }
     
@@ -306,7 +307,7 @@ public class MultiThreadAnnouncementSender {
             for (Thread thread : activeSendingThreads) {
                 if (thread != null && thread.isAlive()) {
                     thread.interrupt();
-                    log.info("[多线程发送] 已中断发送线程: " + thread.getName());
+                    log.info(LangManager.get("xinpga.multithread.thread.interrupted.log", thread.getName()));
                 }
             }
             activeSendingThreads.clear();

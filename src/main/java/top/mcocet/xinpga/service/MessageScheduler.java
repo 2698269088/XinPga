@@ -3,6 +3,7 @@ package top.mcocet.xinpga.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.bbtt.mcbot.Bot;
+import xin.bbtt.mcbot.LangManager;
 
 import java.util.List;
 import java.util.concurrent.*;
@@ -47,9 +48,9 @@ public class MessageScheduler {
             } else {
                 task = scheduler.scheduleAtFixedRate(this::sendPublicMessages, 0, config.getIntervalSeconds(), TimeUnit.SECONDS);
             }
-            log.info("调度器已启动，模式: " + config.getSendMode());
+            log.info(LangManager.get("xinpga.scheduler.started", config.getSendMode()));
         } catch (RejectedExecutionException e) {
-            log.error("启动调度器失败，线程池不可用: " + e.getMessage());
+            log.error(LangManager.get("xinpga.scheduler.start.failed", e.getMessage()));
             ensureSchedulerAvailable();
         }
     }
@@ -121,7 +122,7 @@ public class MessageScheduler {
                     
                     // 添加控制台提示
                     if (xinPga.isRunning) {
-                        log.info("已随机发送一条公告信息");
+                        log.info(LangManager.get("xinpga.scheduler.random.sent"));
                     }
                 } else {
                     // 原有的顺序发送所有消息逻辑
@@ -145,7 +146,7 @@ public class MessageScheduler {
 
                     // 在所有消息发送完毕后添加控制台提示
                     if (xinPga.isRunning) {
-                        log.info("本次公告已发送完毕，准备开始发送新一轮信息");
+                        log.info(LangManager.get("xinpga.scheduler.round.completed"));
                     }
                 }
             } catch (InterruptedException e) {

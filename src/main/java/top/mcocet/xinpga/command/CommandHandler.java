@@ -95,7 +95,7 @@ public class CommandHandler {
             case "format" -> {
                 if (args.length < 3) {
                     log.info(LangManager.get("xinpga.command.usage", "/xpa greeting format <格式>"));
-                    log.info("提示：格式中可以使用 #name# 来表示玩家名");
+                    log.info(LangManager.get("xinpga.command.greeting.format.hint"));
                     return;
                 }
                 

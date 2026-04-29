@@ -47,7 +47,7 @@ public class XinPga implements Plugin, Listener {
     }
 
     public String getVersion() {
-        return "1.9";
+        return "1.9.1";
     }
 
     @Override
@@ -476,7 +476,7 @@ public class XinPga implements Plugin, Listener {
         getConfig().setNumberReplacementEnabled(enabled);
         try {
             getConfig().saveConfig();
-            outLog(LangManager.get("xinpga.number.replace.set.success", enabled ? "启用" : "禁用"));
+            outLog(LangManager.get("xinpga.number.replace.set.success", LangManager.get(enabled ? "xinpga.status.enabled" : "xinpga.status.disabled")));
         } catch (Exception e) {
             outError(LangManager.get("xinpga.config.save.error", e.getMessage()));
         }
@@ -512,7 +512,7 @@ public class XinPga implements Plugin, Listener {
         getConfig().setSyncMultiThreadMessages(enabled);
         try {
             getConfig().saveConfig();
-            outLog(LangManager.get("xinpga.sync.messages.set.success", enabled ? "启用" : "禁用"));
+            outLog(LangManager.get("xinpga.sync.messages.set.success", LangManager.get(enabled ? "xinpga.status.enabled" : "xinpga.status.disabled")));
         } catch (Exception e) {
             outError(LangManager.get("xinpga.config.save.error", e.getMessage()));
         }
