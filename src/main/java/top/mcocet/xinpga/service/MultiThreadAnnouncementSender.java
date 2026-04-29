@@ -201,7 +201,7 @@ public class MultiThreadAnnouncementSender {
                 }
                 
                 try {
-                    Bot.Instance.sendChatMessage(message);
+                    Bot.INSTANCE.sendChatMessage(message);
                     log.debug("[多线程发送] 已发送公告: {}", message);
                 } catch (Exception e) {
                     log.error("[多线程发送] 发送公告失败: {}", e.getMessage());

@@ -1,5 +1,6 @@
 package top.mcocet.xinpga.command;
 
+import xin.bbtt.mcbot.LangManager;
 import xin.bbtt.mcbot.command.Command;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ public class PrivateMessageCommand {
         List<String> output = new ArrayList<>();
 
         if (args.length == 0) {
-            output.add("用法: " + cmd.getUsage());
+            output.add(LangManager.get("xinpga.command.usage", cmd.usage()));
             return output;
         }
 

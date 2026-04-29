@@ -1,5 +1,6 @@
 package top.mcocet.xinpga.command;
 
+import xin.bbtt.mcbot.LangManager;
 import xin.bbtt.mcbot.command.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,109 +38,100 @@ public class CommandHandler {
             case "greeting" -> handleGreetingCommand(args);
             case "numberreplacement" -> handleNumberReplacementCommand(args);
             case "minconsecutive" -> handleMinConsecutiveCommand(args);
-            default -> log.warn("未知子命令: " + args[0] + "！用法: " + cmd.getUsage());
+            default -> log.warn(LangManager.get("xinpga.command.unknown", args[0]));
         }
     }
 
     private void handleNumberReplacementCommand(String[] args) {
         if (args.length < 2) {
-            log.info("用法: /xpa numberreplacement <on|off>");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa numberreplacement <on|off>"));
             return;
         }
         
         switch (args[1].toLowerCase()) {
             case "on":
                 XinPga.INSTANCE.cmdSetNumberReplacementEnabled(true);
-                log.info("信息：已启用数字替换功能");
                 break;
             case "off":
                 XinPga.INSTANCE.cmdSetNumberReplacementEnabled(false);
-                log.info("信息：已禁用数字替换功能");
                 break;
             default:
-                log.warn("错误：参数必须是 on 或 off");
+                log.warn(LangManager.get("xinpga.command.mode.invalid", "numberreplacement", "on, off"));
                 break;
         }
     }
 
     private void handleMinConsecutiveCommand(String[] args) {
         if (args.length < 2) {
-            log.info("用法: /xpa minconsecutive <数字>");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa minconsecutive <数字>"));
             return;
         }
         
         try {
             int minConsecutive = Integer.parseInt(args[1]);
             if (minConsecutive <= 0) {
-                log.warn("错误：最少连续数字数量必须大于0！");
+                log.warn(LangManager.get("xinpga.number.replace.min.error"));
                 return;
             }
             XinPga.INSTANCE.cmdSetMinConsecutiveNumbers(minConsecutive);
-            log.info("信息：已设置最少连续数字数量为: " + minConsecutive);
         } catch (NumberFormatException e) {
-            log.warn("错误：参数必须是整数！");
+            log.warn(LangManager.get("xinpga.command.mode.invalid", "minconsecutive", LangManager.get("xinpga.command.usage", "整数")));
         }
     }
 
     private void handleGreetingCommand(String[] args) {
         if (args.length < 2) {
-            log.info("用法: /xpa greeting <enable|disable|format> [格式]");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa greeting <enable|disable|format> [格式]"));
             return;
         }
 
         switch (args[1].toLowerCase()) {
             case "enable" -> {
                 XinPga.INSTANCE.cmdSetGreetingEnabled(true);
-                log.info("信息：已启用问候语功能");
             }
             case "disable" -> {
                 XinPga.INSTANCE.cmdSetGreetingEnabled(false);
-                log.info("信息：已禁用问候语功能");
             }
             case "format" -> {
                 if (args.length < 3) {
-                    log.info("用法: /xpa greeting format <格式>");
+                    log.info(LangManager.get("xinpga.command.usage", "/xpa greeting format <格式>"));
                     log.info("提示：格式中可以使用 #name# 来表示玩家名");
                     return;
                 }
                 
                 String format = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
                 XinPga.INSTANCE.cmdSetGreetingFormat(format);
-                log.info("信息：已设置问候语格式为: " + format);
             }
-            default -> log.warn("错误：参数必须是 enable、disable 或 format");
+            default -> log.warn(LangManager.get("xinpga.command.mode.invalid", "greeting", "enable, disable, format"));
         }
     }
 
     private void forceStop(String[] args){
         XinPga.INSTANCE.cmdForceStop();
-        log.info("信息：已强制中断所有任务");
     }
 
     private void handleRandomSendingCommand(String[] args) {
         if (args.length < 2) {
-            log.info("用法: /xpa randomSending <on|off>");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa randomSending <on|off>"));
             return;
         }
         
         switch (args[1].toLowerCase()) {
             case "on":
                 XinPga.INSTANCE.cmdSetRandomSending(true);
-                log.info("信息：已启用随机发送模式");
                 break;
             case "off":
                 XinPga.INSTANCE.cmdSetRandomSending(false);
-                log.info("信息：已禁用随机发送模式");
                 break;
             default:
-                log.warn("错误：参数必须是 on 或 off");
+                log.warn(LangManager.get("xinpga.command.mode.invalid", "randomSending", "on, off"));
                 break;
         }
     }
 
     private void handleStringCommand(String[] args) {
         if (args.length < 3) {
-            log.info("用法: /xpa string <编号> <新文本>");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa string <编号> <新文本>"));
             return;
         }
         try {
@@ -147,13 +139,13 @@ public class CommandHandler {
             String text = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
             XinPga.INSTANCE.cmdString(index, text);
         } catch (NumberFormatException e) {
-            log.warn("编号必须是整数！");
+            log.warn(LangManager.get("xinpga.command.mode.invalid", "string", LangManager.get("xinpga.command.usage", "整数")));
         }
     }
 
     private void handleAddMessageCommand(String[] args) {
         if (args.length < 2) {
-            log.info("用法: /xpa addmessage <消息内容>");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa addmessage <消息内容>"));
             return;
         }
         XinPga.INSTANCE.cmdAddMessage(String.join(" ", args).substring(args[0].length() + 1));
@@ -161,7 +153,7 @@ public class CommandHandler {
 
     private void handleRemoveMessageCommand(String[] args) {
         if (args.length < 2) {
-            log.info("用法: /xpa removemessage <消息内容>");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa removemessage <消息内容>"));
             return;
         }
         XinPga.INSTANCE.cmdRemoveMessage(String.join(" ", args).substring(args[0].length() + 1));
@@ -169,24 +161,24 @@ public class CommandHandler {
 
     private void handleTimeCommand(String[] args) {
         if (args.length < 2) {
-            log.info("用法: /xpa time <秒>");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa time <秒>"));
             return;
         }
         try {
             int sec = Integer.parseInt(args[1]);
             if (sec <= 0) {
-                log.warn("时间必须大于0秒！");
+                log.warn(LangManager.get("xinpga.command.mode.invalid", "time", LangManager.get("xinpga.command.usage", "大于0的整数")));
                 return;
             }
             XinPga.INSTANCE.cmdTime(sec);
         } catch (NumberFormatException e) {
-            log.warn("时间必须是整数秒！");
+            log.warn(LangManager.get("xinpga.command.mode.invalid", "time", LangManager.get("xinpga.command.usage", "整数")));
         }
     }
 
     private void handleModeCommand(String[] args) {
         if (args.length < 2) {
-            log.info("用法: /xpa mode <PUBLIC|PRIVATE>");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa mode <PUBLIC|PRIVATE>"));
             return;
         }
         XinPga.INSTANCE.cmdSendMode(args[1]);
@@ -194,27 +186,27 @@ public class CommandHandler {
 
     private void handlePrivateIntervalCommand(String[] args) {
         if (args.length < 2) {
-            log.info("用法: /xpa privateinterval <秒>");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa privateinterval <秒>"));
             return;
         }
         try {
             int sec = Integer.parseInt(args[1]);
             XinPga.INSTANCE.cmdPrivateInterval(sec);
         } catch (NumberFormatException e) {
-            log.warn("时间必须是整数秒！");
+            log.warn(LangManager.get("xinpga.command.mode.invalid", "privateinterval", LangManager.get("xinpga.command.usage", "整数")));
         }
     }
 
     private void handleMessageIntervalCommand(String[] args) {
         if (args.length < 2) {
-            log.info("用法: /xpa messageinterval <秒>");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa messageinterval <秒>"));
             return;
         }
         try {
             int sec = Integer.parseInt(args[1]);
             XinPga.INSTANCE.cmdMessageInterval(sec);
         } catch (NumberFormatException e) {
-            log.warn("时间必须是整数秒！");
+            log.warn(LangManager.get("xinpga.command.mode.invalid", "messageinterval", LangManager.get("xinpga.command.usage", "整数")));
         }
     }
 
@@ -223,84 +215,84 @@ public class CommandHandler {
         // remoteCommandAdminEnabled只应该限制远程命令，不应该限制控制台命令
 
         if (args.length < 2) {
-            log.info("用法: /xpa admin add <玩家名> | remove <玩家名> | list");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa admin add <玩家名> | remove <玩家名> | list"));
             return;
         }
 
         switch (args[1].toLowerCase()) {
             case "add" -> {
                 if (args.length < 3) {
-                    log.info("用法: /xpa admin add <玩家名>");
+                    log.info(LangManager.get("xinpga.command.usage", "/xpa admin add <玩家名>"));
                     return;
                 }
                 XinPga.INSTANCE.cmdAddAdministrator(args[2]);
             }
             case "remove" -> {
                 if (args.length < 3) {
-                    log.info("用法: /xpa admin remove <玩家名>");
+                    log.info(LangManager.get("xinpga.command.usage", "/xpa admin remove <玩家名>"));
                     return;
                 }
                 XinPga.INSTANCE.cmdRemoveAdministrator(args[2]);
             }
             case "list" -> XinPga.INSTANCE.cmdListAdministrators();
-            default -> log.warn("未知的管理员子命令！用法: /xpa admin add <玩家名> | remove <玩家名> | list");
+            default -> log.warn(LangManager.get("xinpga.command.unknown", "admin"));
         }
     }
 
     private void handleBlacklistCommand(String[] args) {
         if (args.length < 2) {
-            log.info("用法: /xpa blacklist add <玩家名> | remove <玩家名> | list");
+            log.info(LangManager.get("xinpga.command.usage", "/xpa blacklist add <玩家名> | remove <玩家名> | list"));
             return;
         }
 
         switch (args[1].toLowerCase()) {
             case "add" -> {
                 if (args.length < 3) {
-                    log.info("用法: /xpa blacklist add <玩家名>");
+                    log.info(LangManager.get("xinpga.command.usage", "/xpa blacklist add <玩家名>"));
                     return;
                 }
                 XinPga.INSTANCE.cmdAddToBlacklist(args[2]);
             }
             case "remove" -> {
                 if (args.length < 3) {
-                    log.info("用法: /xpa blacklist remove <玩家名>");
+                    log.info(LangManager.get("xinpga.command.usage", "/xpa blacklist remove <玩家名>"));
                     return;
                 }
                 XinPga.INSTANCE.cmdRemoveFromBlacklist(args[2]);
             }
             case "list" -> XinPga.INSTANCE.cmdListBlacklist();
-            default -> log.warn("未知的黑名单子命令！用法: /xpa blacklist add <玩家名> | remove <玩家名> | list");
+            default -> log.warn(LangManager.get("xinpga.command.unknown", "blacklist"));
         }
     }
 
     private void showHelp() {
-        log.info("=== XinPga 插件帮助 ===");
-        log.info("/xpa start - 启动定时发送");
-        log.info("/xpa stop - 停止定时发送");
-        log.info("/xpa multistart - 启动多线程公告发送（仅在公告模式下可用）");
-        log.info("/xpa multistop - 停止多线程公告发送");
-        log.info("/xpa string <编号> <文本> - 设置发送内容");
-        log.info("/xpa addmessage <消息> - 添加消息到发送列表");
-        log.info("/xpa removemessage <消息> - 从发送列表移除消息");
-        log.info("/xpa listmessages - 列出所有发送消息");
-        log.info("/xpa time <秒> - 设置公告发送间隔");
-        log.info("/xpa mode <PUBLIC|PRIVATE> - 设置发送模式");
-        log.info("/xpa privateinterval <秒> - 设置私聊发送间隔");
-        log.info("/xpa messageinterval <秒> - 设置消息间发送间隔");
-        log.info("/xpa randomSending <on|off> - 设置随机发送模式");
-        log.info("/xpa numberreplacement <on|off> - 设置数字替换功能");
-        log.info("/xpa minconsecutive <数字> - 设置最少连续数字数量");
-        log.info("/xpa greeting <enable|disable> - 控制问候语开关");
-        log.info("/xpa greeting format [格式] - 修改问候语格式，以#name#做玩家占位符");
-        log.info("/xpa updateplayerlist - 手动更新在线玩家列表");
-        log.info("/xpa blacklist add <玩家名> - 添加玩家到私聊黑名单");
-        log.info("/xpa blacklist remove <玩家名> - 从私聊黑名单移除玩家");
-        log.info("/xpa blacklist list - 列出私聊黑名单");
-        log.info("/xpa admin add <玩家名> - 添加玩家到管理员列表");
-        log.info("/xpa admin remove <玩家名> - 从管理员列表移除玩家");
-        log.info("/xpa admin list - 列出管理员");
-        log.info("/xpa reload - 重载配置文件");
-        log.info("/xpa debug - 显示插件信息");
-        log.info("/xpa help - 显示此帮助信息");
+        log.info(LangManager.get("xinpga.help.title"));
+        log.info(LangManager.get("xinpga.help.start"));
+        log.info(LangManager.get("xinpga.help.stop"));
+        log.info(LangManager.get("xinpga.help.multistart"));
+        log.info(LangManager.get("xinpga.help.multistop"));
+        log.info(LangManager.get("xinpga.help.string"));
+        log.info(LangManager.get("xinpga.help.addmessage"));
+        log.info(LangManager.get("xinpga.help.removemessage"));
+        log.info(LangManager.get("xinpga.help.listmessages"));
+        log.info(LangManager.get("xinpga.help.time"));
+        log.info(LangManager.get("xinpga.help.mode"));
+        log.info(LangManager.get("xinpga.help.privateinterval"));
+        log.info(LangManager.get("xinpga.help.messageinterval"));
+        log.info(LangManager.get("xinpga.help.randomsending"));
+        log.info(LangManager.get("xinpga.help.numberreplacement"));
+        log.info(LangManager.get("xinpga.help.minconsecutive"));
+        log.info(LangManager.get("xinpga.help.greeting"));
+        log.info(LangManager.get("xinpga.help.greeting.format"));
+        log.info(LangManager.get("xinpga.help.updateplayerlist"));
+        log.info(LangManager.get("xinpga.help.blacklist.add"));
+        log.info(LangManager.get("xinpga.help.blacklist.remove"));
+        log.info(LangManager.get("xinpga.help.blacklist.list"));
+        log.info(LangManager.get("xinpga.help.admin.add"));
+        log.info(LangManager.get("xinpga.help.admin.remove"));
+        log.info(LangManager.get("xinpga.help.admin.list"));
+        log.info(LangManager.get("xinpga.help.reload"));
+        log.info(LangManager.get("xinpga.help.debug"));
+        log.info(LangManager.get("xinpga.help.help"));
     }
 }

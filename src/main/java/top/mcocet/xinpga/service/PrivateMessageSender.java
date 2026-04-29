@@ -40,7 +40,7 @@ public class PrivateMessageSender {
         }
         lastUpdateTime = System.currentTimeMillis();
 
-        Map<UUID, GameProfile> players = Bot.Instance.players;
+        Map<UUID, GameProfile> players = Bot.INSTANCE.players;
 
         List<String> onlinePlayers = players.values().stream()
                 .map(GameProfile::getName)
@@ -88,7 +88,7 @@ public class PrivateMessageSender {
     }
 
     private static boolean isPlayerOnline(String playerName) {
-        Map<UUID, GameProfile> players = Bot.Instance.players;
+        Map<UUID, GameProfile> players = Bot.INSTANCE.players;
         return players.values().stream()
                 .map(GameProfile::getName)
                 .anyMatch(name -> name.equals(playerName));
@@ -144,7 +144,7 @@ public class PrivateMessageSender {
                         message += " " + xinPga.randomString(randomLength);
                     }
                     try {
-                        Bot.Instance.sendCommand("msg " + playerName + " " + message);
+                        Bot.INSTANCE.sendCommand("msg " + playerName + " " + message);
                     } catch (Exception e) {
                         log.error("发送私聊消息给玩家 {} 失败: {}", playerName, e.getMessage());
                     }

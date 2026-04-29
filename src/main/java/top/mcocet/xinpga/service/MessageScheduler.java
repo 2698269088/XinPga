@@ -117,7 +117,7 @@ public class MessageScheduler {
                     if (config.isAppendRandom()) {
                         message += " " + xinPga.randomString(config.getRandomLength());
                     }
-                    Bot.Instance.sendChatMessage(message);
+                    Bot.INSTANCE.sendChatMessage(message);
                     
                     // 添加控制台提示
                     if (xinPga.isRunning) {
@@ -132,7 +132,7 @@ public class MessageScheduler {
                         if (config.isAppendRandom()) {
                             message += " " + xinPga.randomString(config.getRandomLength());
                         }
-                        Bot.Instance.sendChatMessage(message);
+                        Bot.INSTANCE.sendChatMessage(message);
 
                         if (i < messages.size() - 1) {
                             long waitTime = config.getMessageInterval() * 1000L;

@@ -2,6 +2,7 @@ package top.mcocet.xinpga.service;
 
 import top.mcocet.xinpga.XinPga;
 import top.mcocet.xinpga.config.XinPgaConfig;
+import xin.bbtt.mcbot.LangManager;
 
 import java.util.List;
 
@@ -18,24 +19,24 @@ public class CommandService {
 
     public void handleStart() {
         if (xinPga.isRunning) {
-            xinPga.outLog("任务：任务已经在运行中！");
+            xinPga.outLog(LangManager.get("xinpga.command.already.running"));
             return;
         }
         config.setEnabled(true);
         saveConfig();
         scheduler.start();
-        xinPga.outLog("任务：已启动定时发送");
+        xinPga.outLog(LangManager.get("xinpga.command.started"));
     }
 
     public void handleStop() {
         if (!xinPga.isRunning) {
-            xinPga.outLog("任务：任务未运行！");
+            xinPga.outLog(LangManager.get("xinpga.command.not.running"));
             return;
         }
         config.setEnabled(false);
         saveConfig();
         scheduler.stop();
-        xinPga.outLog("任务：已停止定时发送");
+        xinPga.outLog(LangManager.get("xinpga.command.stopped"));
     }
 
     public void handleString(int index, String text) {
@@ -54,9 +55,9 @@ public class CommandService {
             }
             
             saveConfig();
-            xinPga.outLog("信息：第 " + (index + 1) + " 条发送内容已改为: " + text);
+            xinPga.outLog(LangManager.get("xinpga.command.string.updated", index + 1, text));
         } else {
-            xinPga.outError("错误：编号超出范围，当前共有 " + messages.size() + " 条消息");
+            xinPga.outError(LangManager.get("xinpga.command.string.index.error", messages.size()));
         }
     }
 
@@ -69,21 +70,21 @@ public class CommandService {
         }
         
         saveConfig();
-        xinPga.outLog("信息：已添加消息: " + message);
+        xinPga.outLog(LangManager.get("xinpga.command.message.added", message));
     }
 
     public void handleRemoveMessage(String message) {
         config.removeMessage(message);
         saveConfig();
-        xinPga.outLog("信息：已移除消息: " + message);
+        xinPga.outLog(LangManager.get("xinpga.command.message.removed", message));
     }
 
     public void handleListMessages() {
         List<String> messages = config.getMessages();
         if (messages.isEmpty()) {
-            xinPga.outLog("信息：主消息列表为空");
+            xinPga.outLog(LangManager.get("xinpga.command.list.empty"));
         } else {
-            xinPga.outLog("信息：主消息列表:");
+            xinPga.outLog(LangManager.get("xinpga.command.list.header"));
             for (int i = 0; i < messages.size(); i++) {
                 xinPga.outLog((i + 1) + ". " + messages.get(i));
             }
@@ -92,9 +93,9 @@ public class CommandService {
         // 总是显示多线程消息列表，不管同步设置如何
         List<String> multiThreadMessages = config.getMultiThreadMessages();
         if (multiThreadMessages.isEmpty()) {
-            xinPga.outLog("信息：多线程消息列表为空");
+            xinPga.outLog(LangManager.get("xinpga.command.multithread.list.empty"));
         } else {
-            xinPga.outLog("信息：多线程消息列表:");
+            xinPga.outLog(LangManager.get("xinpga.command.multithread.list.header"));
             for (int i = 0; i < multiThreadMessages.size(); i++) {
                 xinPga.outLog((i + 1) + ". " + multiThreadMessages.get(i));
             }
@@ -104,7 +105,7 @@ public class CommandService {
     public void handleTime(int seconds) {
         config.setIntervalSeconds(seconds);
         saveConfig();
-        xinPga.outLog("信息：发送间隔已改为: " + seconds + " 秒");
+        xinPga.outLog(LangManager.get("xinpga.command.time.updated", seconds));
         if (xinPga.isRunning) {
             scheduler.stop();
             scheduler.start();
@@ -116,21 +117,21 @@ public class CommandService {
             XinPga.SendMode sendMode = XinPga.SendMode.valueOf(mode.toUpperCase());
             config.setSendMode(sendMode);
             saveConfig();
-            xinPga.outLog("信息：发送模式已改为: " + mode);
+            xinPga.outLog(LangManager.get("xinpga.command.mode.updated", mode));
 
             if (xinPga.isRunning) {
                 scheduler.stop();
                 scheduler.start();
             }
         } catch (IllegalArgumentException e) {
-            xinPga.outError("警告：无效的发送模式: " + mode + "，有效值为: PUBLIC, PRIVATE");
+            xinPga.outError(LangManager.get("xinpga.command.mode.invalid", mode, "PUBLIC, PRIVATE"));
         }
     }
 
     public void handlePrivateInterval(int seconds) {
         config.setPrivateMessageInterval(seconds);
         saveConfig();
-        xinPga.outLog("信息：私聊发送间隔已改为: " + seconds + " 秒");
+        xinPga.outLog(LangManager.get("xinpga.command.private.interval.updated", seconds));
 
         if (xinPga.isRunning && config.getSendMode() == XinPga.SendMode.PRIVATE) {
             scheduler.stop();
@@ -141,50 +142,50 @@ public class CommandService {
     public void handleMessageInterval(int seconds) {
         config.setMessageInterval(seconds);
         saveConfig();
-        xinPga.outLog("信息：消息发送间隔已改为: " + seconds + " 秒");
+        xinPga.outLog(LangManager.get("xinpga.command.message.interval.updated", seconds));
     }
 
     public void handleAddToBlacklist(String playerName) {
         config.addToBlacklist(playerName);
         saveConfig();
         PrivateMessageSender.forceUpdate();
-        xinPga.outLog("信息：已将玩家 " + playerName + " 添加到私聊黑名单");
+        xinPga.outLog(LangManager.get("xinpga.command.blacklist.added", playerName));
     }
 
     public void handleRemoveFromBlacklist(String playerName) {
         config.removeFromBlacklist(playerName);
         saveConfig();
         PrivateMessageSender.forceUpdate();
-        xinPga.outLog("信息：已将玩家 " + playerName + " 从私聊黑名单中移除");
+        xinPga.outLog(LangManager.get("xinpga.command.blacklist.removed", playerName));
     }
 
     public void handleListBlacklist() {
         List<String> blacklist = config.getPrivateMessageBlacklist();
         if (blacklist.isEmpty()) {
-            xinPga.outLog("信息：私聊黑名单为空");
+            xinPga.outLog(LangManager.get("xinpga.command.blacklist.empty"));
         } else {
-            xinPga.outLog("信息：私聊黑名单玩家列表: " + String.join(", ", blacklist));
+            xinPga.outLog(LangManager.get("xinpga.command.blacklist.header", String.join(", ", blacklist)));
         }
     }
 
     public void handleAddAdministrator(String playerName) {
         config.addAdministrator(playerName);
         saveConfig();
-        xinPga.outLog("信息：已将玩家 " + playerName + " 添加到管理员列表");
+        xinPga.outLog(LangManager.get("xinpga.command.admin.added", playerName));
     }
 
     public void handleRemoveAdministrator(String playerName) {
         config.removeAdministrator(playerName);
         saveConfig();
-        xinPga.outLog("信息：已将玩家 " + playerName + " 从管理员列表中移除");
+        xinPga.outLog(LangManager.get("xinpga.command.admin.removed", playerName));
     }
 
     public void handleListAdministrators() {
         List<String> admins = config.getAdministrators();
         if (admins.isEmpty()) {
-            xinPga.outLog("信息：管理员列表为空");
+            xinPga.outLog(LangManager.get("xinpga.command.admin.empty"));
         } else {
-            xinPga.outLog("信息：管理员列表: " + String.join(", ", admins));
+            xinPga.outLog(LangManager.get("xinpga.command.admin.header", String.join(", ", admins)));
         }
     }
 
@@ -194,7 +195,7 @@ public class CommandService {
         if (config.getSendMode() == XinPga.SendMode.PRIVATE) {
             PrivateMessageSender.forceUpdate();
         }
-        xinPga.outLog("信息：配置文件已重载");
+        xinPga.outLog(LangManager.get("xinpga.command.reload"));
 
         if (config.isEnabled()) {
             scheduler.start();
@@ -203,7 +204,7 @@ public class CommandService {
 
     public void handleUpdatePlayerList() {
         PrivateMessageSender.updateOnlinePlayerList();
-        xinPga.outLog("信息：已手动更新在线玩家列表");
+        xinPga.outLog(LangManager.get("xinpga.command.playerlist.updated"));
     }
 
     public void handleDebugPlayerList() {
@@ -214,7 +215,7 @@ public class CommandService {
     public void handleSetRandomSending(boolean enabled) {
         config.setRandomSendingEnabled(enabled);
         saveConfig();
-        xinPga.outLog("信息：随机发送模式已" + (enabled ? "启用" : "禁用"));
+        xinPga.outLog(LangManager.get("xinpga.command.random.sending.updated", enabled ? "启用" : "禁用"));
         
         // 如果正在运行，重启调度器以应用更改
         if (xinPga.isRunning) {
@@ -226,19 +227,19 @@ public class CommandService {
     public void handleSetGreetingEnabled(boolean enabled) {
         config.setGreetingEnabled(enabled);
         saveConfig();
-        xinPga.outLog("信息：问候语功能已" + (enabled ? "启用" : "禁用"));
+        xinPga.outLog(LangManager.get("xinpga.command.greeting.updated", enabled ? "启用" : "禁用"));
     }
 
     public void handleSetGreetingFormat(String format) {
         config.setGreetingFormat(format);
         saveConfig();
-        xinPga.outLog("信息：问候语格式已设置为: " + format);
+        xinPga.outLog(LangManager.get("xinpga.command.greeting.format.updated", format));
     }
     
     public void handleMultiThreadInterval(int seconds) {
         config.setMultiThreadInterval(seconds);
         saveConfig();
-        xinPga.outLog("信息：多线程发送间隔已设置为: " + seconds + " 秒");
+        xinPga.outLog(LangManager.get("xinpga.multithread.interval.set.success", seconds));
     }
     
     // 多线程消息处理方法
@@ -248,34 +249,34 @@ public class CommandService {
             messages.set(index, text);
             config.setMultiThreadMessages(messages);
             saveConfig();
-            xinPga.outLog("信息：第 " + (index + 1) + " 条多线程消息已改为: " + text);
+            xinPga.outLog(LangManager.get("xinpga.command.multithread.string.updated", index + 1, text));
         } else {
-            xinPga.outError("错误：编号超出范围，当前共有 " + messages.size() + " 条多线程消息");
+            xinPga.outError(LangManager.get("xinpga.command.multithread.string.index.error", messages.size()));
         }
     }
 
     public void handleMultiThreadAddMessage(String message) {
         config.addMultiThreadMessage(message);
         saveConfig();
-        xinPga.outLog("信息：已添加多线程消息: " + message);
+        xinPga.outLog(LangManager.get("xinpga.command.multithread.message.added", message));
     }
 
     public void handleMultiThreadRemoveMessage(String message) {
         boolean removed = config.getMultiThreadMessages().remove(message);
         if (removed) {
             saveConfig();
-            xinPga.outLog("信息：已移除多线程消息: " + message);
+            xinPga.outLog(LangManager.get("xinpga.command.multithread.message.removed", message));
         } else {
-            xinPga.outLog("错误：未找到多线程消息: " + message);
+            xinPga.outLog(LangManager.get("xinpga.command.multithread.message.not.found", message));
         }
     }
 
     public void handleMultiThreadListMessages() {
         List<String> messages = config.getMultiThreadMessages();
         if (messages.isEmpty()) {
-            xinPga.outLog("信息：多线程消息列表为空");
+            xinPga.outLog(LangManager.get("xinpga.command.multithread.list.empty"));
         } else {
-            xinPga.outLog("信息：多线程消息列表:");
+            xinPga.outLog(LangManager.get("xinpga.command.multithread.list.header"));
             for (int i = 0; i < messages.size(); i++) {
                 xinPga.outLog((i + 1) + ". " + messages.get(i));
             }
@@ -285,7 +286,7 @@ public class CommandService {
     public void handleSetSyncMultiThreadMessages(boolean enabled) {
         config.setSyncMultiThreadMessages(enabled);
         saveConfig();
-        xinPga.outLog("信息：同步更新多线程消息功能已" + (enabled ? "启用" : "禁用"));
+        xinPga.outLog(LangManager.get("xinpga.command.sync.updated", enabled ? "启用" : "禁用"));
     }
     
     private void saveConfig() {

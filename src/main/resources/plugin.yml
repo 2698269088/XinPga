@@ -1,0 +1,6 @@
+name: XinPga
+main: top.mcocet.xinpga.XinPga
+version: 1.8.1
+type: PLUGIN
+depend:
+  - XinMetaPlugin

@@ -5,6 +5,7 @@ import top.mcocet.xinpga.service.MessageScheduler;
 import top.mcocet.xinpga.service.CommandService;
 import top.mcocet.xinpga.service.MultiThreadAnnouncementSender; // 导入新的多线程发送器
 import xin.bbtt.mcbot.Bot;
+import xin.bbtt.mcbot.LangManager;
 import xin.bbtt.mcbot.event.EventHandler;
 import xin.bbtt.mcbot.event.Listener;
 import xin.bbtt.mcbot.events.LoginSuccessEvent;
@@ -18,11 +19,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
-import top.mcocet.xinpga.command.XpaCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import xin.bbtt.mcbot.command.Command;
 import top.mcocet.xinpga.command.XpaCommandExecutor;
 import top.mcocet.xinpga.config.XinPgaConfig;
 
 public class XinPga implements Plugin, Listener {
+    private static final Logger logger = LoggerFactory.getLogger(XinPga.class);
     public volatile boolean isRunning = false;
     public volatile boolean isSuspended = false;
 
@@ -38,30 +42,29 @@ public class XinPga implements Plugin, Listener {
         INSTANCE = this;
     }
 
-    @Override
     public String getName() {
         return ("XinPga");
     }
 
-    @Override
     public String getVersion() {
-        return "1.8.1";
+        return "1.9";
     }
 
     @Override
     public void onLoad() {
-        getLogger().info("XinPga 插件已加载");
+        LangManager.initLang(XinPga.class.getClassLoader());
+        logger.info(LangManager.get("xinpga.plugin.loaded"));
     }
 
     @Override
     public void onEnable() {
-        getLogger().info("XinPga 插件已启用");
-        getLogger().info("XinPga 版本: v1.8.1");
+        logger.info(LangManager.get("xinpga.plugin.enabled"));
+        logger.info(LangManager.get("xinpga.plugin.version", getVersion()));
 
         loadConfig();
 
-        Bot.Instance.getPluginManager().events().registerEvents(this, this);
-        Bot.Instance.getPluginManager().registerCommand(new XpaCommand(), new XpaCommandExecutor(), this);
+        Bot.INSTANCE.getPluginManager().events().registerEvents(this, this);
+        Bot.INSTANCE.getPluginManager().registerCommand(new Command("xpa", new String[]{"xpa", "xinpga"}, "xinpga.command.description", "/xpa start|stop|forcestop|string <编号> <文本>|addmessage <消息>|removemessage <消息>|listmessages|time <秒>|mode <PUBLIC|PRIVATE>|privateinterval <秒>|messageinterval <秒>|randomsending <on|off>|greeting <enable|disable|format> [格式]|reload|debug|blacklist add <玩家名>|blacklist remove <玩家名>|blacklist list|admin add <玩家名>|admin remove <玩家名>|admin list|updateplayerlist|debug"), new XpaCommandExecutor(), this);
 
         this.scheduler = new MessageScheduler(this, config);
         this.commandService = new CommandService(this, config, scheduler);
@@ -71,7 +74,7 @@ public class XinPga implements Plugin, Listener {
         }
         
         // 设置多线程发送器的bot名称
-        MultiThreadAnnouncementSender.setBotName(Bot.Instance.getProtocol().getProfile().getName());
+        MultiThreadAnnouncementSender.setBotName(Bot.INSTANCE.getProtocol().getProfile().getName());
     }
 
     @Override
@@ -79,7 +82,7 @@ public class XinPga implements Plugin, Listener {
         if (scheduler != null) {
             scheduler.stop();
         }
-        getLogger().info("XinPga 插件已关闭");
+        logger.info(LangManager.get("xinpga.plugin.disabled"));
     }
 
     @Override
@@ -87,13 +90,13 @@ public class XinPga implements Plugin, Listener {
         if (scheduler != null) {
             scheduler.shutdown();
         }
-        getLogger().info("XinPga 插件已卸载");
+        logger.info(LangManager.get("xinpga.plugin.unloaded"));
     }
 
     @EventHandler
     public void onLogin(LoginSuccessEvent event) {
-        PrivateMessageSender.setBotName(Bot.Instance.getProtocol().getProfile().getName());
-        MultiThreadAnnouncementSender.setBotName(Bot.Instance.getProtocol().getProfile().getName());
+        PrivateMessageSender.setBotName(Bot.INSTANCE.getProtocol().getProfile().getName());
+        MultiThreadAnnouncementSender.setBotName(Bot.INSTANCE.getProtocol().getProfile().getName());
         if (config.isEnabled() && !isRunning) {
             scheduler.start();
         }
@@ -112,13 +115,13 @@ public class XinPga implements Plugin, Listener {
             config = new XinPgaConfig(configPath);
             config.loadConfig();
         } catch (Exception e) {
-            getLogger().error("无法加载配置文件: " + e.getMessage());
+            logger.error(LangManager.get("xinpga.config.load.error", e.getMessage()));
             try {
                 config = new XinPgaConfig(configPath);
                 config.saveConfig();
-                getLogger().info("已创建默认配置文件");
+                logger.info(LangManager.get("xinpga.config.create.success"));
             } catch (Exception ex) {
-                throw new RuntimeException("无法创建默认配置文件: " + ex.getMessage(), ex);
+                throw new RuntimeException(LangManager.get("xinpga.config.create.error", ex.getMessage()), ex);
             }
         }
     }
@@ -151,7 +154,7 @@ public class XinPga implements Plugin, Listener {
             if (commandPrefix != null) {
                 // 提取命令部分
                 String command = message.substring(commandPrefix.length());
-                outLog("收到来自管理员 " + playerName + " 的远程命令: " + command);
+                outLog(LangManager.get("xinpga.remote.command.received", playerName, command));
 
                 // 异步执行命令，避免阻塞事件线程
                 CompletableFuture.runAsync(() -> {
@@ -159,7 +162,7 @@ public class XinPga implements Plugin, Listener {
                 });
             }
         } catch (Exception e) {
-            outError("处理私聊消息时发生错误: " + e.getMessage());
+            outError(LangManager.get("xinpga.remote.command.private.message.error", e.getMessage()));
         }
     }
 
@@ -171,11 +174,11 @@ public class XinPga implements Plugin, Listener {
             // 暂停公告任务
             if (isRunning && getConfig().getSendMode() == SendMode.PUBLIC) {
                 isSuspended = true;
-                output.add("信息：任务已暂停，开始执行远程命令");
+                output.add(LangManager.get("xinpga.remote.command.task.suspended"));
                 
                 // 如果多线程发送也在运行，也暂停它
                 if (MultiThreadAnnouncementSender.isMultiThreadRunning()) {
-                    output.add("信息：多线程发送功能也已暂停");
+                    output.add(LangManager.get("xinpga.remote.command.multithread.suspended"));
                 }
             }
 
@@ -183,20 +186,20 @@ public class XinPga implements Plugin, Listener {
             String[] args = command.split("\\s+");
             if (args.length > 0) {
                 XpaCommandExecutor executor = new XpaCommandExecutor();
-                List<String> commandOutput = executor.onCommandWithOutput(new XpaCommand(), "xpa", args);
+                List<String> commandOutput = executor.onCommandWithOutput(new Command("xpa", new String[]{"xpa", "xinpga"}, "xinpga.command.description", "/xpa start|stop|forcestop|string <编号> <文本>|addmessage <消息>|removemessage <消息>|listmessages|time <秒>|mode <PUBLIC|PRIVATE>|privateinterval <秒>|messageinterval <秒>|randomsending <on|off>|greeting <enable|disable|format> [格式]|reload|debug|blacklist add <玩家名>|blacklist remove <玩家名>|blacklist list|admin add <玩家名>|admin remove <玩家名>|admin list|updateplayerlist|debug"), "xpa", args);
                 output.addAll(commandOutput);
             } else {
-                output.add("错误：命令格式不正确");
+                output.add(LangManager.get("xinpga.remote.command.format.error"));
             }
 
         } catch (Exception e) {
-            output.add("错误：执行命令时发生异常: " + e.getMessage());
-            outError("执行远程命令时发生错误: " + e.getMessage());
+            output.add(LangManager.get("xinpga.remote.command.execute.error", e.getMessage()));
+            outError(LangManager.get("xinpga.remote.command.execute.failed", e.getMessage()));
         } finally {
             // 恢复公告任务
             if (isSuspended && getConfig().getSendMode() == SendMode.PUBLIC) {
                 isSuspended = false;
-                output.add("信息：任务恢复，远程命令执行完成");
+                output.add(LangManager.get("xinpga.remote.command.task.resumed"));
             }
         }
 
@@ -216,12 +219,12 @@ public class XinPga implements Plugin, Listener {
                     if (!line.trim().isEmpty()) {
                         // 添加延迟，避免消息发送过快
                         Thread.sleep(200);
-                        Bot.Instance.sendCommand("msg " + playerName + " " + line);
+                        Bot.INSTANCE.sendCommand("msg " + playerName + " " + line);
                     }
                 }
-                outLog("已向管理员 " + playerName + " 发送命令执行结果");
+                outLog(LangManager.get("xinpga.remote.command.result.sent", playerName));
             } catch (Exception e) {
-                outError("向管理员发送命令结果失败: " + e.getMessage());
+                outError(LangManager.get("xinpga.remote.command.send.result.failed", e.getMessage()));
             }
         }).start();
     }
@@ -239,7 +242,7 @@ public class XinPga implements Plugin, Listener {
     }
 
     public String getBotName() {
-        return Bot.Instance.getProtocol().getProfile().getName();
+        return Bot.INSTANCE.getProtocol().getProfile().getName();
     }
 
     // 命令方法
@@ -258,7 +261,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleStart();
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -266,7 +269,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleStop();
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
         
         // 同时停止多线程发送功能
@@ -277,7 +280,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleString(index, text);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -285,7 +288,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleAddMessage(message);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -293,7 +296,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleRemoveMessage(message);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -301,7 +304,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleListMessages();
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -309,7 +312,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleTime(seconds);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -317,7 +320,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleSendMode(mode);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -325,7 +328,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handlePrivateInterval(seconds);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -333,7 +336,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleMessageInterval(seconds);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -341,7 +344,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleAddToBlacklist(playerName);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -349,7 +352,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleRemoveFromBlacklist(playerName);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -357,7 +360,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleListBlacklist();
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -365,7 +368,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleAddAdministrator(playerName);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -373,7 +376,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleRemoveAdministrator(playerName);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -381,7 +384,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleListAdministrators();
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -389,7 +392,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleReload();
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -397,7 +400,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleUpdatePlayerList();
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -405,7 +408,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleDebugPlayerList();
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -413,7 +416,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleSetRandomSending(enabled);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -421,7 +424,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleSetGreetingEnabled(enabled);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -429,20 +432,20 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleSetGreetingFormat(format);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
     public void outLog(String log) {
-        getLogger().info(log);
+        logger.info(log);
     }
 
     public void outError(String log) {
-        getLogger().error(log);
+        logger.error(log);
     }
 
     public void outWarn(String log) {
-        getLogger().warn(log);
+        logger.warn(log);
     }
 
     public enum SendMode {
@@ -452,12 +455,12 @@ public class XinPga implements Plugin, Listener {
     // 多线程发送功能相关的命令方法
     public void cmdStartMultiThread() {
         if (getConfig().getSendMode() != SendMode.PRIVATE) {
-            outWarn("多线程发送功能仅在私聊发送模式下可用");
+            outWarn(LangManager.get("xinpga.multithread.mode.warning"));
             return;
         }
         
         if (!isRunning) {
-            outWarn("请先启动主发送功能，才能启动多线程发送功能");
+            outWarn(LangManager.get("xinpga.multithread.not.started.warning"));
             return;
         }
         
@@ -473,23 +476,23 @@ public class XinPga implements Plugin, Listener {
         getConfig().setNumberReplacementEnabled(enabled);
         try {
             getConfig().saveConfig();
-            outLog("数字替换功能已" + (enabled ? "启用" : "禁用"));
+            outLog(LangManager.get("xinpga.number.replace.set.success", enabled ? "启用" : "禁用"));
         } catch (Exception e) {
-            outError("保存配置文件失败: " + e.getMessage());
+            outError(LangManager.get("xinpga.config.save.error", e.getMessage()));
         }
     }
 
     public void cmdSetMinConsecutiveNumbers(int minConsecutiveNumbers) {
         if (minConsecutiveNumbers <= 0) {
-            outWarn("最少连续数字数量必须大于0");
+            outWarn(LangManager.get("xinpga.number.replace.min.error"));
             return;
         }
         getConfig().setMinConsecutiveNumbers(minConsecutiveNumbers);
         try {
             getConfig().saveConfig();
-            outLog("最少连续数字数量已设置为: " + minConsecutiveNumbers);
+            outLog(LangManager.get("xinpga.number.replace.min.set.success", minConsecutiveNumbers));
         } catch (Exception e) {
-            outError("保存配置文件失败: " + e.getMessage());
+            outError(LangManager.get("xinpga.config.save.error", e.getMessage()));
         }
     }
     
@@ -498,9 +501,9 @@ public class XinPga implements Plugin, Listener {
         getConfig().setMultiThreadInterval(seconds);
         try {
             getConfig().saveConfig();
-            outLog("多线程发送间隔已设置为: " + seconds + " 秒");
+            outLog(LangManager.get("xinpga.multithread.interval.set.success", seconds));
         } catch (Exception e) {
-            outError("保存配置文件失败: " + e.getMessage());
+            outError(LangManager.get("xinpga.config.save.error", e.getMessage()));
         }
     }
     
@@ -509,9 +512,9 @@ public class XinPga implements Plugin, Listener {
         getConfig().setSyncMultiThreadMessages(enabled);
         try {
             getConfig().saveConfig();
-            outLog("同步更新多线程消息功能已" + (enabled ? "启用" : "禁用"));
+            outLog(LangManager.get("xinpga.sync.messages.set.success", enabled ? "启用" : "禁用"));
         } catch (Exception e) {
-            outError("保存配置文件失败: " + e.getMessage());
+            outError(LangManager.get("xinpga.config.save.error", e.getMessage()));
         }
     }
     
@@ -520,7 +523,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleMultiThreadString(index, text);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -528,7 +531,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleMultiThreadAddMessage(message);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -536,7 +539,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleMultiThreadRemoveMessage(message);
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 
@@ -544,7 +547,7 @@ public class XinPga implements Plugin, Listener {
         if (commandService != null) {
             commandService.handleMultiThreadListMessages();
         } else {
-            getLogger().error("CommandService 未初始化");
+            logger.error(LangManager.get("xinpga.command.service.not.initialized"));
         }
     }
 }
