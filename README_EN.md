@@ -40,7 +40,8 @@ A promotional plugin built on the **xinbot 2.x** framework, supporting multi-mes
 | `/xpa privateinterval <seconds>`    | Set private message interval                   |
 | `/xpa messageinterval <seconds>`    | Set interval between messages                  |
 | `/xpa randomSending <on/off>`       | Toggle random sending mode                     |
-| `/xpa numberreplacement <on/off>`   | Toggle number replacement feature              |
+| `/xpa numberreplacement <on/off>`   | Toggle multi-thread number replacement feature |
+| `/xpa mainnumberreplacement <on/off>` | Toggle main mode number replacement feature  |
 | `/xpa minconsecutive <number>`      | Set minimum consecutive numbers                |
 | `/xpa greeting <enable/disable>`    | Toggle greeting feature                        |
 | `/xpa greeting format <format>`     | Modify greeting format (#name# as placeholder) |
@@ -119,7 +120,8 @@ Or
 - `privateinterval <seconds>` - Set private message interval
 - `messageinterval <seconds>` - Set interval between messages
 - `randomSending <on/off>` - Toggle random sending mode
-- `numberreplacement <on/off>` - Toggle number replacement feature
+- `numberreplacement <on/off>` - Toggle multi-thread number replacement feature
+- `mainnumberreplacement <on/off>` - Toggle main mode number replacement feature
 - `minconsecutive <number>` - Set minimum consecutive numbers
 - `greeting <enable/disable>` - Toggle greeting feature
 - `greeting format <format>` - Modify greeting format (#name# as placeholder)
@@ -207,8 +209,10 @@ The following features cannot be used directly via remote commands for user expe
   "multiThreadInterval": 2,
   // Multi-thread check interval (seconds)
   "multiThreadCheckInterval": 5,
-  // Whether to enable number replacement (replace consecutive numbers with math bold font)
+  // Whether to enable multi-thread number replacement (replace consecutive numbers with math bold font)
   "numberReplacementEnabled": false,
+  // Whether to enable main mode number replacement (replace consecutive numbers with math bold font)
+  "mainNumberReplacementEnabled": false,
   // Minimum consecutive numbers threshold for replacement
   "minConsecutiveNumbers": 5,
   // Whether to sync main message list and multi-thread message list

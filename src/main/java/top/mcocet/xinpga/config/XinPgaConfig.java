@@ -35,7 +35,8 @@ public class XinPgaConfig {
     private int multiThreadCheckInterval = 5; // 多线程发送检查的间隔（秒）
     
     // 数字替换功能的配置项
-    private boolean numberReplacementEnabled = false; // 是否启用数字替换功能
+    private boolean numberReplacementEnabled = false; // 是否启用多线程数字替换功能
+    private boolean mainNumberReplacementEnabled = false; // 是否启用主发送模式数字替换功能
     private int minConsecutiveNumbers = 5; // 最少连续数字数量，达到此数量才进行替换
     
     // 同步更新多线程消息的配置项
@@ -139,6 +140,11 @@ public class XinPgaConfig {
             numberReplacementEnabled = root.get("numberReplacementEnabled").getAsBoolean();
         }
         
+        // 加载主发送模式数字替换功能配置
+        if (root.has("mainNumberReplacementEnabled")) {
+            mainNumberReplacementEnabled = root.get("mainNumberReplacementEnabled").getAsBoolean();
+        }
+        
         if (root.has("minConsecutiveNumbers")) {
             minConsecutiveNumbers = root.get("minConsecutiveNumbers").getAsInt();
         }
@@ -190,6 +196,7 @@ public class XinPgaConfig {
         
         // 保存数字替换功能配置
         root.addProperty("numberReplacementEnabled", numberReplacementEnabled);
+        root.addProperty("mainNumberReplacementEnabled", mainNumberReplacementEnabled);
         root.addProperty("minConsecutiveNumbers", minConsecutiveNumbers);
         
         // 保存同步更新多线程消息配置
@@ -254,6 +261,7 @@ public class XinPgaConfig {
         
         // 数字替换功能配置项
         def.addProperty("numberReplacementEnabled", false);
+        def.addProperty("mainNumberReplacementEnabled", false);
         def.addProperty("minConsecutiveNumbers", 5);
 
         Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(def));
@@ -478,6 +486,15 @@ public class XinPgaConfig {
 
     public void setNumberReplacementEnabled(boolean numberReplacementEnabled) {
         this.numberReplacementEnabled = numberReplacementEnabled;
+    }
+    
+    // 主发送模式数字替换功能相关方法
+    public boolean isMainNumberReplacementEnabled() {
+        return mainNumberReplacementEnabled;
+    }
+
+    public void setMainNumberReplacementEnabled(boolean mainNumberReplacementEnabled) {
+        this.mainNumberReplacementEnabled = mainNumberReplacementEnabled;
     }
 
     public int getMinConsecutiveNumbers() {

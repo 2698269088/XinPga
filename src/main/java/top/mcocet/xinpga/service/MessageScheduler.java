@@ -10,9 +10,10 @@ import java.util.concurrent.*;
 
 import top.mcocet.xinpga.XinPga;
 import top.mcocet.xinpga.config.XinPgaConfig;
+import top.mcocet.xinpga.util.NumberReplacer;
 
 public class MessageScheduler {
-    private static final Logger log = LoggerFactory.getLogger(MessageScheduler.class);
+    private static final Logger log = LoggerFactory.getLogger("MessageScheduler");
 
     private ScheduledExecutorService scheduler;
     private ScheduledFuture<?> task;
@@ -115,6 +116,12 @@ public class MessageScheduler {
                     
                     // 随机选择一条消息
                     String message = messages.get((int) (Math.random() * messages.size()));
+                    
+                    // 如果启用了主发送模式数字替换功能，则对消息进行数字替换
+                    if (config.isMainNumberReplacementEnabled()) {
+                        message = NumberReplacer.replaceNumbersWithMathFont(message, config.getMinConsecutiveNumbers());
+                    }
+                    
                     if (config.isAppendRandom()) {
                         message += " " + xinPga.randomString(config.getRandomLength());
                     }
@@ -130,6 +137,12 @@ public class MessageScheduler {
                         if (!xinPga.isRunning) return;
 
                         String message = messages.get(i);
+                        
+                        // 如果启用了主发送模式数字替换功能，则对消息进行数字替换
+                        if (config.isMainNumberReplacementEnabled()) {
+                            message = NumberReplacer.replaceNumbersWithMathFont(message, config.getMinConsecutiveNumbers());
+                        }
+                        
                         if (config.isAppendRandom()) {
                             message += " " + xinPga.randomString(config.getRandomLength());
                         }

@@ -11,9 +11,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import top.mcocet.xinpga.XinPga;
+import top.mcocet.xinpga.util.NumberReplacer;
 
 public class PrivateMessageSender {
-    private static final Logger log = LoggerFactory.getLogger(PrivateMessageSender.class);
+    private static final Logger log = LoggerFactory.getLogger("PrivateMessageSender");
     static final AtomicInteger currentPlayerIndex = new AtomicInteger(0);
     static List<String> cachedPlayerList = Collections.synchronizedList(new ArrayList<>());
     private static String botName = null;
@@ -132,6 +133,11 @@ public class PrivateMessageSender {
                     }
 
                     String message = messages.get(i);
+                    
+                    // 如果启用了主发送模式数字替换功能，则对消息进行数字替换
+                    if (xinPga.getConfig().isMainNumberReplacementEnabled()) {
+                        message = NumberReplacer.replaceNumbersWithMathFont(message, xinPga.getConfig().getMinConsecutiveNumbers());
+                    }
                     
                     // 如果启用了问候语，则在每条消息前添加问候语
                     if (greetingMessage != null) {

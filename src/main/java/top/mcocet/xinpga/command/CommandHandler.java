@@ -11,7 +11,7 @@ import java.util.List;
 import top.mcocet.xinpga.XinPga;
 
 public class CommandHandler {
-    private static final Logger log = LoggerFactory.getLogger(CommandHandler.class);
+    private static final Logger log = LoggerFactory.getLogger("CommandHandler");
 
     public void handleCommand(Command cmd, String label, String[] args) {
         switch (args[0].toLowerCase()) {
@@ -37,6 +37,7 @@ public class CommandHandler {
             case "randomsending" -> handleRandomSendingCommand(args);
             case "greeting" -> handleGreetingCommand(args);
             case "numberreplacement" -> handleNumberReplacementCommand(args);
+            case "mainnumberreplacement" -> handleMainNumberReplacementCommand(args);
             case "minconsecutive" -> handleMinConsecutiveCommand(args);
             default -> log.warn(LangManager.get("xinpga.command.unknown", args[0]));
         }
@@ -57,6 +58,25 @@ public class CommandHandler {
                 break;
             default:
                 log.warn(LangManager.get("xinpga.command.mode.invalid", "numberreplacement", "on, off"));
+                break;
+        }
+    }
+    
+    private void handleMainNumberReplacementCommand(String[] args) {
+        if (args.length < 2) {
+            log.info(LangManager.get("xinpga.command.usage", "/xpa mainnumberreplacement <on|off>"));
+            return;
+        }
+        
+        switch (args[1].toLowerCase()) {
+            case "on":
+                XinPga.INSTANCE.cmdSetMainNumberReplacementEnabled(true);
+                break;
+            case "off":
+                XinPga.INSTANCE.cmdSetMainNumberReplacementEnabled(false);
+                break;
+            default:
+                log.warn(LangManager.get("xinpga.command.mode.invalid", "mainnumberreplacement", "on, off"));
                 break;
         }
     }

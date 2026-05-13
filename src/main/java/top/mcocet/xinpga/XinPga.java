@@ -26,7 +26,7 @@ import top.mcocet.xinpga.command.XpaCommandExecutor;
 import top.mcocet.xinpga.config.XinPgaConfig;
 
 public class XinPga implements Plugin, Listener {
-    private static final Logger logger = LoggerFactory.getLogger(XinPga.class);
+    private static final Logger logger = LoggerFactory.getLogger("XinPgaMain");
     public volatile boolean isRunning = false;
     public volatile boolean isSuspended = false;
 
@@ -47,7 +47,7 @@ public class XinPga implements Plugin, Listener {
     }
 
     public String getVersion() {
-        return "1.9.1";
+        return "1.9.2";
     }
 
     @Override
@@ -474,6 +474,17 @@ public class XinPga implements Plugin, Listener {
     // 数字替换功能相关的命令方法
     public void cmdSetNumberReplacementEnabled(boolean enabled) {
         getConfig().setNumberReplacementEnabled(enabled);
+        try {
+            getConfig().saveConfig();
+            outLog(LangManager.get("xinpga.number.replace.set.success", LangManager.get(enabled ? "xinpga.status.enabled" : "xinpga.status.disabled")));
+        } catch (Exception e) {
+            outError(LangManager.get("xinpga.config.save.error", e.getMessage()));
+        }
+    }
+    
+    // 主发送模式数字替换功能相关的命令方法
+    public void cmdSetMainNumberReplacementEnabled(boolean enabled) {
+        getConfig().setMainNumberReplacementEnabled(enabled);
         try {
             getConfig().saveConfig();
             outLog(LangManager.get("xinpga.number.replace.set.success", LangManager.get(enabled ? "xinpga.status.enabled" : "xinpga.status.disabled")));

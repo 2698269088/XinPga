@@ -14,7 +14,7 @@ import java.util.List;
 import top.mcocet.xinpga.XinPga;
 
 public class XpaCommandExecutor extends TabExecutor {
-    private static final Logger log = LoggerFactory.getLogger(XpaCommandExecutor.class);
+    private static final Logger log = LoggerFactory.getLogger("XpaCommandExecutor");
 
     @Override
     public void onCommand(Command cmd, String label, String[] args) {
@@ -83,6 +83,7 @@ public class XpaCommandExecutor extends TabExecutor {
                 case "randomsending" -> handleRandomSendingCommandWithOutput(args, output);
                 case "greeting" -> handleGreetingCommandWithOutput(args, output);
                 case "numberreplacement" -> handleNumberReplacementCommandWithOutput(args, output);
+                case "mainnumberreplacement" -> handleMainNumberReplacementCommandWithOutput(args, output);
                 case "minconsecutive" -> handleMinConsecutiveCommandWithOutput(args, output);
                 case "multistring" -> handleMultiThreadStringCommandWithOutput(args, output);
                 case "multiaddmessage" -> handleMultiThreadAddMessageCommandWithOutput(args, output);
@@ -116,6 +117,26 @@ public class XpaCommandExecutor extends TabExecutor {
                 break;
             default:
                 output.add(LangManager.get("xinpga.command.mode.invalid", "numberreplacement", "on, off"));
+                break;
+        }
+    }
+    
+    // 处理 mainNumberReplacement 命令
+    private void handleMainNumberReplacementCommandWithOutput(String[] args, List<String> output) {
+        if (args.length < 2) {
+            output.add(LangManager.get("xinpga.command.usage", "/xpa mainnumberreplacement <on|off>"));
+            return;
+        }
+        
+        switch (args[1].toLowerCase()) {
+            case "on":
+                XinPga.INSTANCE.cmdSetMainNumberReplacementEnabled(true);
+                break;
+            case "off":
+                XinPga.INSTANCE.cmdSetMainNumberReplacementEnabled(false);
+                break;
+            default:
+                output.add(LangManager.get("xinpga.command.mode.invalid", "mainnumberreplacement", "on, off"));
                 break;
         }
     }

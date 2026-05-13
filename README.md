@@ -40,7 +40,8 @@
 | `/xpa privateinterval <秒>`        | 设置私聊发送间隔              |
 | `/xpa messageinterval <秒>`        | 设置消息间发送间隔             |
 | `/xpa randomSending <on/off>`     | 设置随机发送模式              |
-| `/xpa numberreplacement <on/off>` | 设置数字替换功能              |
+| `/xpa numberreplacement <on/off>` | 设置多线程数字替换功能          |
+| `/xpa mainnumberreplacement <on/off>` | 设置主发送模式数字替换功能      |
 | `/xpa minconsecutive <数字>`        | 设置最少连续数字数量            |
 | `/xpa greeting <enable/disable>`  | 控制问候语开关               |
 | `/xpa greeting format <格式>`       | 修改问候语格式，以#name#做玩家占位符 |
@@ -119,7 +120,8 @@ XinPga 现已支持完整的国际化功能，提供以下7种语言：
 - `privateinterval <秒>` - 设置私聊发送间隔
 - `messageinterval <秒>` - 设置消息间发送间隔
 - `randomSending <on/off>` - 设置随机发送模式
-- `numberreplacement <on/off>` - 设置数字替换功能
+- `numberreplacement <on/off>` - 设置多线程数字替换功能
+- `mainnumberreplacement <on/off>` - 设置主发送模式数字替换功能
 - `minconsecutive <数字>` - 设置最少连续数字数量
 - `greeting <enable/disable>` - 控制问候语开关
 - `greeting format <格式>` - 修改问候语格式，以#name#做玩家占位符
@@ -207,8 +209,10 @@ XinPga 现已支持完整的国际化功能，提供以下7种语言：
   "multiThreadInterval": 2,
   // 多线程发送检查的间隔（秒）
   "multiThreadCheckInterval": 5,
-  // 是否启用数字替换功能（将连续数字替换为数学粗体字体）
+  // 是否启用多线程数字替换功能（将连续数字替换为数学粗体字体）
   "numberReplacementEnabled": false,
+  // 是否启用主发送模式数字替换功能（将连续数字替换为数学粗体字体）
+  "mainNumberReplacementEnabled": false,
   // 最少连续数字数量，达到此数量才进行数字替换
   "minConsecutiveNumbers": 5,
   // 是否同步更新主消息列表和多线程消息列表

@@ -49,7 +49,9 @@
   "multiThreadCheckInterval": 5,
   // 多线程发送检查的间隔（秒）
   "numberReplacementEnabled": false,
-  // 是否启用数字替换功能（将连续数字替换为数学粗体字体）
+  // 是否启用多线程数字替换功能（将连续数字替换为数学粗体字体）
+  "mainNumberReplacementEnabled": false,
+  // 是否启用主发送模式数字替换功能（将连续数字替换为数学粗体字体）
   "minConsecutiveNumbers": 5,
   // 最少连续数字数量，达到此数量才进行数字替换
   "syncMultiThreadMessages": false
