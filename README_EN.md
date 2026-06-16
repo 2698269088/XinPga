@@ -11,6 +11,7 @@ A promotional plugin built on the **xinbot 2.x** framework, supporting multi-mes
 - 📢 **Multiple Sending Modes** - Supports both public chat and private message modes
 - 🔀 **Multi-thread Sending** - Independent multi-thread announcement sending feature
 - 🎲 **Random Sending** - Configurable random sending mode
+- ⏱️ **Random Sending Interval** - Both main thread and multi-thread support random intervals, simulating human-like sending
 - 👋 **Greeting System** - Customizable greeting format
 - 🔢 **Number Replacement** - Replace consecutive numbers with mathematical fonts
 - 🎮 **Remote Commands** - Control plugin via private messages
@@ -40,6 +41,7 @@ A promotional plugin built on the **xinbot 2.x** framework, supporting multi-mes
 | `/xpa privateinterval <seconds>`    | Set private message interval                   |
 | `/xpa messageinterval <seconds>`    | Set interval between messages                  |
 | `/xpa randomSending <on/off>`       | Toggle random sending mode                     |
+| `/xpa randominterval <on/off>`       | Toggle random sending interval (main/multi-thread) |
 | `/xpa numberreplacement <on/off>`   | Toggle multi-thread number replacement feature |
 | `/xpa mainnumberreplacement <on/off>` | Toggle main mode number replacement feature  |
 | `/xpa minconsecutive <number>`      | Set minimum consecutive numbers                |
@@ -120,6 +122,7 @@ Or
 - `privateinterval <seconds>` - Set private message interval
 - `messageinterval <seconds>` - Set interval between messages
 - `randomSending <on/off>` - Toggle random sending mode
+- `randominterval <on/off>` - Toggle random sending interval (main/multi-thread)
 - `numberreplacement <on/off>` - Toggle multi-thread number replacement feature
 - `mainnumberreplacement <on/off>` - Toggle main mode number replacement feature
 - `minconsecutive <number>` - Set minimum consecutive numbers
@@ -216,7 +219,17 @@ The following features cannot be used directly via remote commands for user expe
   // Minimum consecutive numbers threshold for replacement
   "minConsecutiveNumbers": 5,
   // Whether to sync main message list and multi-thread message list
-  "syncMultiThreadMessages": false
+  "syncMultiThreadMessages": false,
+  // Whether to enable random sending interval feature
+  "randomIntervalEnabled": false,
+  // Main thread sending interval deviation (seconds), actual interval randomly within base ± deviation
+  "mainIntervalDeviation": 5,
+  // Main thread message interval deviation (seconds)
+  "mainMessageIntervalDeviation": 3,
+  // Multi-thread sending interval deviation (seconds)
+  "multiThreadIntervalDeviation": 5,
+  // Multi-thread message interval deviation (seconds)
+  "multiThreadMessageIntervalDeviation": 3
 }
 ```
 

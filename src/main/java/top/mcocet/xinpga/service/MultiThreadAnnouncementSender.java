@@ -83,8 +83,8 @@ public class MultiThreadAnnouncementSender {
                         sendMultiThreadAnnouncements(multiThreadMessages, duration, interval);
                     }
                     
-                    // 等待指定的间隔后再发送下一轮
-                    Thread.sleep(getMultiThreadCheckInterval() * 1000L);
+                    // 等待指定的间隔后再发送下一轮（带随机偏差）
+                    Thread.sleep(getRandomizedMultiThreadCheckInterval() * 1000L);
                 }
                 
                 log.info(LangManager.get("xinpga.multithread.stop.log"));
@@ -211,8 +211,8 @@ public class MultiThreadAnnouncementSender {
 
                 messageIndex++;
                 
-                // 等待指定的时间间隔
-                long sleepTime = interval * 1000L;
+                // 等待指定的时间间隔（带随机偏差）
+                long sleepTime = getRandomizedMultiThreadMessageInterval(interval) * 1000L;
                 long elapsed = System.currentTimeMillis() - startTime;
                 if (elapsed >= durationMillis) {
                     break; // 超出持续时间，退出循环
@@ -263,5 +263,34 @@ public class MultiThreadAnnouncementSender {
      */
     public static boolean isMultiThreadRunning() {
         return isMultiThreadRunning;
+    }
+
+    /**
+     * 获取带随机偏差的多线程检查间隔
+     */
+    private static int getRandomizedMultiThreadCheckInterval() {
+        XinPgaConfig config = XinPga.INSTANCE.getConfig();
+        int baseInterval = config.getMultiThreadCheckInterval();
+        if (!config.isRandomIntervalEnabled()) {
+            return baseInterval;
+        }
+        int deviation = config.getMultiThreadIntervalDeviation();
+        int min = Math.max(1, baseInterval - deviation);
+        int max = baseInterval + deviation;
+        return min + (int) (Math.random() * (max - min + 1));
+    }
+
+    /**
+     * 获取带随机偏差的多线程消息间发送间隔
+     */
+    private static int getRandomizedMultiThreadMessageInterval(int baseInterval) {
+        XinPgaConfig config = XinPga.INSTANCE.getConfig();
+        if (!config.isRandomIntervalEnabled()) {
+            return baseInterval;
+        }
+        int deviation = config.getMultiThreadMessageIntervalDeviation();
+        int min = Math.max(1, baseInterval - deviation);
+        int max = baseInterval + deviation;
+        return min + (int) (Math.random() * (max - min + 1));
     }
 }

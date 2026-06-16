@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import top.mcocet.xinpga.XinPga;
+import top.mcocet.xinpga.config.XinPgaConfig;
 import top.mcocet.xinpga.util.NumberReplacer;
 
 public class PrivateMessageSender {
@@ -158,7 +159,7 @@ public class PrivateMessageSender {
 
                     // 如果不是最后一条消息，则等待
                     if (i < messages.size() - 1) {
-                        long waitTime = xinPga.getConfig().getMessageInterval() * 1000L;
+                        long waitTime = getRandomizedMessageInterval(xinPga.getConfig()) * 1000L;
                         long startTime = System.currentTimeMillis();
                         
                         // 使用更短的睡眠间隔以提高响应性
@@ -209,5 +210,19 @@ public class PrivateMessageSender {
     public static void printPlayerListStatus() {
         log.info(LangManager.get("xinpga.playerlist.status.current_list", cachedPlayerList));
         log.info(LangManager.get("xinpga.playerlist.status.current_index", currentPlayerIndex.get()));
+    }
+
+    /**
+     * 获取带随机偏差的消息间发送间隔
+     */
+    private static int getRandomizedMessageInterval(XinPgaConfig config) {
+        if (!config.isRandomIntervalEnabled()) {
+            return config.getMessageInterval();
+        }
+        int baseInterval = config.getMessageInterval();
+        int deviation = config.getMainMessageIntervalDeviation();
+        int min = Math.max(1, baseInterval - deviation);
+        int max = baseInterval + deviation;
+        return min + (int) (Math.random() * (max - min + 1));
     }
 }

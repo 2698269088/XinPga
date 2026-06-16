@@ -11,6 +11,7 @@
 - 📢 **多种发送模式** - 支持公屏发送和私聊发送两种模式
 - 🔀 **多线程发送** - 支持独立的多线程公告发送功能
 - 🎲 **随机发送** - 可配置随机发送模式
+- ⏱️ **随机发送间隔** - 主线程和多线程发送均支持随机间隔，模拟真人发送
 - 👋 **问候语系统** - 支持自定义问候语格式
 - 🔢 **数字替换** - 可将连续数字替换为数学字体
 - 🎮 **远程命令** - 支持通过私聊发送远程命令控制插件
@@ -40,6 +41,7 @@
 | `/xpa privateinterval <秒>`        | 设置私聊发送间隔              |
 | `/xpa messageinterval <秒>`        | 设置消息间发送间隔             |
 | `/xpa randomSending <on/off>`     | 设置随机发送模式              |
+| `/xpa randominterval <on/off>`    | 设置随机发送间隔（主线程/多线程） |
 | `/xpa numberreplacement <on/off>` | 设置多线程数字替换功能          |
 | `/xpa mainnumberreplacement <on/off>` | 设置主发送模式数字替换功能      |
 | `/xpa minconsecutive <数字>`        | 设置最少连续数字数量            |
@@ -120,6 +122,7 @@ XinPga 现已支持完整的国际化功能，提供以下7种语言：
 - `privateinterval <秒>` - 设置私聊发送间隔
 - `messageinterval <秒>` - 设置消息间发送间隔
 - `randomSending <on/off>` - 设置随机发送模式
+- `randominterval <on/off>` - 设置随机发送间隔（主线程/多线程）
 - `numberreplacement <on/off>` - 设置多线程数字替换功能
 - `mainnumberreplacement <on/off>` - 设置主发送模式数字替换功能
 - `minconsecutive <数字>` - 设置最少连续数字数量
@@ -216,7 +219,17 @@ XinPga 现已支持完整的国际化功能，提供以下7种语言：
   // 最少连续数字数量，达到此数量才进行数字替换
   "minConsecutiveNumbers": 5,
   // 是否同步更新主消息列表和多线程消息列表
-  "syncMultiThreadMessages": false
+  "syncMultiThreadMessages": false,
+  // 是否启用随机发送间隔功能
+  "randomIntervalEnabled": false,
+  // 主线程发送间隔偏差（秒），实际间隔在基础值±偏差范围内随机
+  "mainIntervalDeviation": 5,
+  // 主线程消息间发送间隔偏差（秒）
+  "mainMessageIntervalDeviation": 3,
+  // 多线程发送间隔偏差（秒）
+  "multiThreadIntervalDeviation": 5,
+  // 多线程消息间发送间隔偏差（秒）
+  "multiThreadMessageIntervalDeviation": 3
 }
 ```
 

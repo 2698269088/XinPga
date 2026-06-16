@@ -30,7 +30,7 @@ public class CommandHandler {
             case "reload" -> XinPga.INSTANCE.cmdReload();
             case "help" -> showHelp();
             case "updateplayerlist" -> XinPga.INSTANCE.cmdUpdatePlayerList();
-            case "debug" -> XinPga.INSTANCE.cmdDebugPlayerList();
+            case "debug"   -> XinPga.INSTANCE.cmdDebugPlayerList();
             case "admin" -> handleAdminCommand(args);
             case "blacklist" -> handleBlacklistCommand(args);
             case "forcestop" -> forceStop(args);
@@ -39,6 +39,7 @@ public class CommandHandler {
             case "numberreplacement" -> handleNumberReplacementCommand(args);
             case "mainnumberreplacement" -> handleMainNumberReplacementCommand(args);
             case "minconsecutive" -> handleMinConsecutiveCommand(args);
+            case "randominterval" -> handleRandomIntervalCommand(args);
             default -> log.warn(LangManager.get("xinpga.command.unknown", args[0]));
         }
     }
@@ -96,6 +97,25 @@ public class CommandHandler {
             XinPga.INSTANCE.cmdSetMinConsecutiveNumbers(minConsecutive);
         } catch (NumberFormatException e) {
             log.warn(LangManager.get("xinpga.command.mode.invalid", "minconsecutive", LangManager.get("xinpga.command.usage", "整数")));
+        }
+    }
+
+    private void handleRandomIntervalCommand(String[] args) {
+        if (args.length < 2) {
+            log.info(LangManager.get("xinpga.command.usage", "/xpa randominterval <on|off>"));
+            return;
+        }
+        
+        switch (args[1].toLowerCase()) {
+            case "on":
+                XinPga.INSTANCE.cmdSetRandomIntervalEnabled(true);
+                break;
+            case "off":
+                XinPga.INSTANCE.cmdSetRandomIntervalEnabled(false);
+                break;
+            default:
+                log.warn(LangManager.get("xinpga.command.mode.invalid", "randominterval", "on, off"));
+                break;
         }
     }
 
@@ -302,6 +322,7 @@ public class CommandHandler {
         log.info(LangManager.get("xinpga.help.randomsending"));
         log.info(LangManager.get("xinpga.help.numberreplacement"));
         log.info(LangManager.get("xinpga.help.minconsecutive"));
+        log.info(LangManager.get("xinpga.help.randominterval"));
         log.info(LangManager.get("xinpga.help.greeting"));
         log.info(LangManager.get("xinpga.help.greeting.format"));
         log.info(LangManager.get("xinpga.help.updateplayerlist"));

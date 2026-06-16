@@ -54,6 +54,16 @@
   // 是否启用主发送模式数字替换功能（将连续数字替换为数学粗体字体）
   "minConsecutiveNumbers": 5,
   // 最少连续数字数量，达到此数量才进行数字替换
-  "syncMultiThreadMessages": false
+  "syncMultiThreadMessages": false,
   // 是否同步更新主消息列表和多线程消息列表
+  "randomIntervalEnabled": false,
+  // 是否启用随机发送间隔功能（主线程/多线程发送间隔在基础值±偏差范围内随机）
+  "mainIntervalDeviation": 5,
+  // 主线程发送间隔偏差（秒），实际间隔在基础值±此值范围内随机
+  "mainMessageIntervalDeviation": 3,
+  // 主线程消息间发送间隔偏差（秒）
+  "multiThreadIntervalDeviation": 5,
+  // 多线程发送间隔偏差（秒）
+  "multiThreadMessageIntervalDeviation": 3
+  // 多线程消息间发送间隔偏差（秒）
 }

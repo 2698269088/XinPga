@@ -45,15 +45,30 @@ public class MessageScheduler {
 
         try {
             if (config.getSendMode() == XinPga.SendMode.PRIVATE) {
-                task = scheduler.scheduleWithFixedDelay(this::sendPrivateMessages, 0, config.getPrivateMessageInterval(), TimeUnit.SECONDS);
+                long initialDelay = getRandomizedMainInterval(config.getPrivateMessageInterval());
+                task = scheduler.scheduleWithFixedDelay(this::sendPrivateMessages, initialDelay, getRandomizedMainInterval(config.getPrivateMessageInterval()), TimeUnit.SECONDS);
             } else {
-                task = scheduler.scheduleAtFixedRate(this::sendPublicMessages, 0, config.getIntervalSeconds(), TimeUnit.SECONDS);
+                long initialDelay = getRandomizedMainInterval(config.getIntervalSeconds());
+                task = scheduler.scheduleWithFixedDelay(this::sendPublicMessages, initialDelay, getRandomizedMainInterval(config.getIntervalSeconds()), TimeUnit.SECONDS);
             }
             log.info(LangManager.get("xinpga.scheduler.started", config.getSendMode()));
         } catch (RejectedExecutionException e) {
             log.error(LangManager.get("xinpga.scheduler.start.failed", e.getMessage()));
             ensureSchedulerAvailable();
         }
+    }
+
+    /**
+     * 获取带随机偏差的主线程发送间隔
+     */
+    private long getRandomizedMainInterval(int baseInterval) {
+        if (!config.isRandomIntervalEnabled()) {
+            return baseInterval;
+        }
+        int deviation = config.getMainIntervalDeviation();
+        int min = Math.max(1, baseInterval - deviation);
+        int max = baseInterval + deviation;
+        return min + (int) (Math.random() * (max - min + 1));
     }
 
     public void forceStop() {
@@ -149,7 +164,7 @@ public class MessageScheduler {
                         Bot.INSTANCE.sendChatMessage(message);
 
                         if (i < messages.size() - 1) {
-                            long waitTime = config.getMessageInterval() * 1000L;
+                            long waitTime = getRandomizedMainMessageInterval(config.getMessageInterval()) * 1000L;
                             long startTime = System.currentTimeMillis();
                             while (xinPga.isRunning && (System.currentTimeMillis() - startTime) < waitTime) {
                                 Thread.sleep(100);
@@ -166,6 +181,19 @@ public class MessageScheduler {
                 Thread.currentThread().interrupt();
             }
         }).start();
+    }
+
+    /**
+     * 获取带随机偏差的主线程消息间发送间隔
+     */
+    private int getRandomizedMainMessageInterval(int baseInterval) {
+        if (!config.isRandomIntervalEnabled()) {
+            return baseInterval;
+        }
+        int deviation = config.getMainMessageIntervalDeviation();
+        int min = Math.max(1, baseInterval - deviation);
+        int max = baseInterval + deviation;
+        return min + (int) (Math.random() * (max - min + 1));
     }
 
     private void sendPrivateMessages() {

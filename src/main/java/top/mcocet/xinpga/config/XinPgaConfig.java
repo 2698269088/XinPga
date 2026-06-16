@@ -41,6 +41,13 @@ public class XinPgaConfig {
     
     // 同步更新多线程消息的配置项
     private boolean syncMultiThreadMessages = false; // 是否同步更新多线程消息列表
+    
+    // 随机发送间隔的配置项
+    private boolean randomIntervalEnabled = false; // 是否启用随机发送间隔
+    private int mainIntervalDeviation = 5; // 主线程发送间隔偏差（秒）
+    private int mainMessageIntervalDeviation = 3; // 主线程消息间发送间隔偏差（秒）
+    private int multiThreadIntervalDeviation = 5; // 多线程发送间隔偏差（秒）
+    private int multiThreadMessageIntervalDeviation = 3; // 多线程消息间发送间隔偏差（秒）
 
     public XinPgaConfig(Path configPath) {
         this.configPath = configPath;
@@ -148,6 +155,27 @@ public class XinPgaConfig {
         if (root.has("minConsecutiveNumbers")) {
             minConsecutiveNumbers = root.get("minConsecutiveNumbers").getAsInt();
         }
+        
+        // 加载随机发送间隔配置
+        if (root.has("randomIntervalEnabled")) {
+            randomIntervalEnabled = root.get("randomIntervalEnabled").getAsBoolean();
+        }
+        
+        if (root.has("mainIntervalDeviation")) {
+            mainIntervalDeviation = root.get("mainIntervalDeviation").getAsInt();
+        }
+        
+        if (root.has("mainMessageIntervalDeviation")) {
+            mainMessageIntervalDeviation = root.get("mainMessageIntervalDeviation").getAsInt();
+        }
+        
+        if (root.has("multiThreadIntervalDeviation")) {
+            multiThreadIntervalDeviation = root.get("multiThreadIntervalDeviation").getAsInt();
+        }
+        
+        if (root.has("multiThreadMessageIntervalDeviation")) {
+            multiThreadMessageIntervalDeviation = root.get("multiThreadMessageIntervalDeviation").getAsInt();
+        }
     }
 
     public void saveConfig() throws IOException {
@@ -201,6 +229,13 @@ public class XinPgaConfig {
         
         // 保存同步更新多线程消息配置
         root.addProperty("syncMultiThreadMessages", syncMultiThreadMessages);
+        
+        // 保存随机发送间隔配置
+        root.addProperty("randomIntervalEnabled", randomIntervalEnabled);
+        root.addProperty("mainIntervalDeviation", mainIntervalDeviation);
+        root.addProperty("mainMessageIntervalDeviation", mainMessageIntervalDeviation);
+        root.addProperty("multiThreadIntervalDeviation", multiThreadIntervalDeviation);
+        root.addProperty("multiThreadMessageIntervalDeviation", multiThreadMessageIntervalDeviation);
 
         Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(root));
     }
@@ -263,6 +298,13 @@ public class XinPgaConfig {
         def.addProperty("numberReplacementEnabled", false);
         def.addProperty("mainNumberReplacementEnabled", false);
         def.addProperty("minConsecutiveNumbers", 5);
+        
+        // 随机发送间隔配置项
+        def.addProperty("randomIntervalEnabled", false);
+        def.addProperty("mainIntervalDeviation", 5);
+        def.addProperty("mainMessageIntervalDeviation", 3);
+        def.addProperty("multiThreadIntervalDeviation", 5);
+        def.addProperty("multiThreadMessageIntervalDeviation", 3);
 
         Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(def));
     }
@@ -512,5 +554,46 @@ public class XinPgaConfig {
 
     public void setSyncMultiThreadMessages(boolean syncMultiThreadMessages) {
         this.syncMultiThreadMessages = syncMultiThreadMessages;
+    }
+    
+    // 随机发送间隔相关方法
+    public boolean isRandomIntervalEnabled() {
+        return randomIntervalEnabled;
+    }
+
+    public void setRandomIntervalEnabled(boolean randomIntervalEnabled) {
+        this.randomIntervalEnabled = randomIntervalEnabled;
+    }
+
+    public int getMainIntervalDeviation() {
+        return mainIntervalDeviation;
+    }
+
+    public void setMainIntervalDeviation(int mainIntervalDeviation) {
+        this.mainIntervalDeviation = mainIntervalDeviation;
+    }
+
+    public int getMainMessageIntervalDeviation() {
+        return mainMessageIntervalDeviation;
+    }
+
+    public void setMainMessageIntervalDeviation(int mainMessageIntervalDeviation) {
+        this.mainMessageIntervalDeviation = mainMessageIntervalDeviation;
+    }
+
+    public int getMultiThreadIntervalDeviation() {
+        return multiThreadIntervalDeviation;
+    }
+
+    public void setMultiThreadIntervalDeviation(int multiThreadIntervalDeviation) {
+        this.multiThreadIntervalDeviation = multiThreadIntervalDeviation;
+    }
+
+    public int getMultiThreadMessageIntervalDeviation() {
+        return multiThreadMessageIntervalDeviation;
+    }
+
+    public void setMultiThreadMessageIntervalDeviation(int multiThreadMessageIntervalDeviation) {
+        this.multiThreadMessageIntervalDeviation = multiThreadMessageIntervalDeviation;
     }
 }

@@ -47,7 +47,7 @@ public class XinPga implements Plugin, Listener {
     }
 
     public String getVersion() {
-        return "1.9.2";
+        return "1.9.4";
     }
 
     @Override
@@ -502,6 +502,16 @@ public class XinPga implements Plugin, Listener {
         try {
             getConfig().saveConfig();
             outLog(LangManager.get("xinpga.number.replace.min.set.success", minConsecutiveNumbers));
+        } catch (Exception e) {
+            outError(LangManager.get("xinpga.config.save.error", e.getMessage()));
+        }
+    }
+
+    public void cmdSetRandomIntervalEnabled(boolean enabled) {
+        getConfig().setRandomIntervalEnabled(enabled);
+        try {
+            getConfig().saveConfig();
+            outLog(LangManager.get("xinpga.random.interval.set.success", LangManager.get(enabled ? "xinpga.status.enabled" : "xinpga.status.disabled")));
         } catch (Exception e) {
             outError(LangManager.get("xinpga.config.save.error", e.getMessage()));
         }
